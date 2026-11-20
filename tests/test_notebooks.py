@@ -73,6 +73,12 @@ def test_install_cell_wheels_only_and_locks():
     assert len(trt) == 1, "TensorRT wrapper/bindings/libs must share one version"
 
 
+def test_cell1_drops_stale_modules_before_import():
+    src = make_notebooks.config_and_env_cell("x")
+    assert src.index("del sys.modules[m]") < src.index("import make_notebooks")
+    assert src.index("del sys.modules[m]") < src.index("from adapres import config")
+
+
 def test_token_never_printed():
     src = make_notebooks.config_and_env_cell("x")
     # the token is only used inside a one-off git -c header and redacted in errors

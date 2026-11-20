@@ -108,6 +108,13 @@ except Exception as e:
 
 sys.path.insert(0, os.path.join(REPO, "src"))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
+# Re-running cells in a live kernel re-clones the repo but Python would keep the OLD imported
+# modules while GIT records the NEW commit. Drop them so the code always matches the hash.
+_stale = [m for m in list(sys.modules) if m == "adapres" or m.startswith("adapres.") or m == "make_notebooks"]
+for m in _stale:
+    del sys.modules[m]
+if _stale:
+    print(f"dropped {{len(_stale)}} previously imported adapres modules (fresh code from this clone)")
 import make_notebooks
 expected_rev = make_notebooks.notebook_rev(CONFIG["notebook"] + ".ipynb")
 if expected_rev != NOTEBOOK_REV:
