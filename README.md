@@ -107,21 +107,26 @@ because Pascal has no fast INT8. Internet must be **On**.
 
 - **D7: evaluation uses single-label `predict()`, not `model.val()`'s multi-label NMS
   (decided 2026-11-20).** Notebook 02b splits the pipeline-vs-`model.val()` gap on the same calib
-  frames. Its 50-frame smoke run found:
-  - The **metric part is −0.11 / −0.07 pts** (mAP50-95 / mAP50). Our pycocotools evaluator
+  frames. Full 200-frame run (commit `4d37cc1`, T4; source
+  `results/sanity/val_diag_02b_yolo11s/diag.json`):
+  - The **metric part is −0.13 / 0.00 pts** (mAP50-95 / mAP50). Our pycocotools evaluator
     agrees with Ultralytics' metric on identical predictions.
-  - The **prediction part is +0.83 / +1.58 pts**. Ultralytics' validator emits 244 vs 171 boxes
-    per image; 40.5% of its boxes re-emit an existing box under another class (ours 0.05%); 14% of
-    its images hit max_det = 300 (ours 0%). At conf ≥ 0.25 the two prediction sets match
-    (100% / 98.3% at IoU ≥ 0.9).
+  - The **prediction part is +0.42 / +1.10 pts**, i.e. the entire end-to-end gap (+0.29 / +1.10).
+    Ultralytics' validator emits 236.8 vs 175.1 boxes per image; 37.7% of its boxes re-emit an
+    existing box under another class (ours 0.08%); 28% of its images hit max_det = 300 (ours 3%).
+    At conf ≥ 0.25 the two prediction sets match (100% / 97.6% at IoU ≥ 0.9; median score
+    difference 2.5·10⁻⁶).
+  - The validator ran with the intended settings: conf 0.001, IoU 0.7, max_det 300, imgsz 640,
+    batch 1, rect False.
+  - A and C reproduce notebook 02's numbers exactly. The 50-frame smoke run showed the same
+    pattern (metric −0.11 / −0.07, predictions +0.83 / +1.58).
 
   All policies are evaluated on single-label `predict()` outputs, which is what a deployed
   detector emits. The **binding agreement check** is: identical-prediction agreement
   |C − B| ≤ 0.5 pts on **both** metrics, **and** the gap explained by NMS mode (thresholds in
   `step2.sanity.val_diag`). Those thresholds were set **after** seeing the smoke-run values. The
-  end-to-end gap is reported but not binding. Our absolute mAP is therefore lower than a
-  `model.val()` number on the same data (by +0.83 / +1.58 pts in the smoke run). The full 200-frame
-  values are in `results/sanity/val_diag_02b_<model>/diag.json`.
+  end-to-end gap is reported but not binding. **Result: PASS.** Our absolute mAP is therefore
+  lower than a `model.val()` number on the same data (by 0.29 / 1.10 pts on these 200 frames).
 
 ## Licences
 

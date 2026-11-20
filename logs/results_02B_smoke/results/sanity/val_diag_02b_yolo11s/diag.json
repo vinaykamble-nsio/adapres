@@ -1,0 +1,200 @@
+{
+  "binding_check": "identical_predictions(both metrics) AND nms_mode_explains_prediction_gap",
+  "binding_pass": true,
+  "checks": {
+    "end_to_end": {
+      "map50": false,
+      "map50_95": false
+    },
+    "identical_predictions": {
+      "map50": true,
+      "map50_95": true
+    },
+    "prediction_agreement": {
+      "map50": false,
+      "map50_95": false
+    }
+  },
+  "components": {
+    "map50": {
+      "A_ours_pred_ours_metric": 47.86006185417785,
+      "B_their_pred_ours_metric": 49.44120862169296,
+      "C_their_pred_their_metric": 49.36984161285376,
+      "cause": "predictions",
+      "end_to_end_pts": 1.509779758675911,
+      "metric_component_pts": -0.071367008839196,
+      "prediction_component_pts": 1.581146767515107
+    },
+    "map50_95": {
+      "A_ours_pred_ours_metric": 22.651588282839114,
+      "B_their_pred_ours_metric": 23.479187711247658,
+      "C_their_pred_their_metric": 23.36960988004192,
+      "cause": "predictions",
+      "end_to_end_pts": 0.7180215972028059,
+      "metric_component_pts": -0.10957783120573994,
+      "prediction_component_pts": 0.8275994284085458
+    }
+  },
+  "end_to_end_failing_metrics": [
+    "map50_95",
+    "map50"
+  ],
+  "identical_predictions_pass": true,
+  "image_ids": [
+    3,
+    4,
+    12,
+    17,
+    30,
+    32,
+    34,
+    41,
+    42,
+    47,
+    54,
+    73,
+    84,
+    103,
+    111,
+    130,
+    139,
+    144,
+    146,
+    165,
+    174,
+    182,
+    189,
+    2333,
+    2336,
+    2352,
+    2356,
+    2358,
+    2367,
+    2377,
+    2386,
+    2397,
+    2402,
+    2403,
+    2409,
+    2410,
+    2416,
+    2450,
+    2454,
+    2462,
+    2464,
+    2465,
+    2469,
+    2470,
+    2473,
+    2488,
+    2498,
+    2517,
+    2518,
+    2520
+  ],
+  "multilabel_signature": {
+    "ours": {
+      "frac_boxes_with_same_box_other_class": 0.0004682195949900503,
+      "frac_images_at_max_det": 0.0,
+      "iou_thr": 0.99,
+      "max_det": 300,
+      "mean_boxes_per_image": 170.86,
+      "n_boxes": 8543
+    },
+    "theirs": {
+      "frac_boxes_with_same_box_other_class": 0.40473266191762874,
+      "frac_images_at_max_det": 0.14,
+      "iou_thr": 0.99,
+      "max_det": 300,
+      "mean_boxes_per_image": 244.26,
+      "n_boxes": 12213
+    }
+  },
+  "n_frames": 50,
+  "nms_explained": true,
+  "nms_explanation": {
+    "explained": true,
+    "parts": {
+      "high_conf_boxes_agree": true,
+      "ours_single_label": true,
+      "theirs_multi_label": true
+    },
+    "thresholds": {
+      "high_conf_match_min": 0.95,
+      "ours_dup_other_class_max": 0.01,
+      "theirs_dup_other_class_min": 0.1
+    },
+    "values": {
+      "ours_dup": 0.0004682195949900503,
+      "ours_matched": 1.0,
+      "theirs_dup": 0.40473266191762874,
+      "theirs_matched": 0.9828571428571429
+    }
+  },
+  "per_class_ap50": {
+    "A": {
+      "bicycle": 0.8341584158415841,
+      "bus": 0.003366336633663366,
+      "car": 0.6329124987059471,
+      "motorcycle": -1.0,
+      "person": 0.6702083688004166,
+      "train": -1.0,
+      "truck": 0.25235747272728126
+    },
+    "B": {
+      "bicycle": 0.8341584158415841,
+      "bus": 0.01834972113901353,
+      "car": 0.6455160340047138,
+      "motorcycle": -1.0,
+      "person": 0.6693855317959052,
+      "train": -1.0,
+      "truck": 0.3046507283034312
+    }
+  },
+  "per_class_ap50_95": {
+    "A": {
+      "bicycle": 0.2004988575780655,
+      "bus": 0.00100990099009901,
+      "car": 0.3900640075590069,
+      "motorcycle": -1.0,
+      "person": 0.372335713809957,
+      "train": -1.0,
+      "truck": 0.16867093420482723
+    },
+    "B": {
+      "bicycle": 0.19439651864143911,
+      "bus": 0.00920262567466683,
+      "car": 0.3988443448255184,
+      "motorcycle": -1.0,
+      "person": 0.3723007220407052,
+      "train": -1.0,
+      "truck": 0.19921517438005334
+    }
+  },
+  "prediction_similarity": {
+    "frac_ours_matched": 1.0,
+    "frac_theirs_matched": 0.9828571428571429,
+    "iou_thr": 0.9,
+    "median_abs_score_diff": 2.3142623901406534e-06,
+    "n_ours": 516,
+    "n_ours_all_conf": 8543,
+    "n_theirs": 525,
+    "n_theirs_all_conf": 12213,
+    "tau": 0.25
+  },
+  "tolerance_pts": 0.5,
+  "ultralytics_val_args": {
+    "agnostic_nms": false,
+    "augment": false,
+    "batch": 1,
+    "conf": 0.001,
+    "half": null,
+    "imgsz": 640,
+    "iou": 0.7,
+    "max_det": 300,
+    "rect": false,
+    "save_json": true,
+    "single_cls": false,
+    "split": "val"
+  }
+}

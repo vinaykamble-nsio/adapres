@@ -9,3 +9,4 @@ calib_fixed_int8,bdd100k_mot,calib,fixed_int8,cache,bdd100k_mot/calib_fixed_int8
 calib_oracle_cheap_dev,bdd100k_mot,calib,oracle_cheap,cache,bdd100k_mot/calib_oracle_cheap_dev,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T12:21:42.015000+00:00,False
 calib_oracle_best_dev,bdd100k_mot,calib,oracle_best,cache,bdd100k_mot/calib_oracle_best_dev,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T12:21:42.015000+00:00,False
 sanity_02_yolo11s,sanity,calib,sanity,check,sanity/sanity_02_yolo11s,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T12:21:42.015000+00:00,False
+val_diag_02b_yolo11s,sanity,calib,val_diagnostic,check,sanity/val_diag_02b_yolo11s,,4d37cc15903d576e6d8b38766da96b6417137053,2026-11-20T14:16:52.618772+00:00,False

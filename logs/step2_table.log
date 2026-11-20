@@ -13,3 +13,6 @@ sanity all_pass: True
 
 sanity all_pass (binding checks of notebook 02): True
 model.val() agreement (notebook 02b, binding, D7): PENDING (no full 02b run in results/)
+$ python scripts/make_step2_table.py (2026-11-20T14:25:01Z)
+sanity all_pass (binding checks of notebook 02): True
+model.val() agreement (notebook 02b, binding, D7): PASS

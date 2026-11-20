@@ -1,0 +1,209 @@
+{
+  "config": {
+    "bdd": {
+      "images_dir_name": "track_images_val",
+      "label_split": "val",
+      "labels_dir_name": "box_track_labels_trainval",
+      "smoke": {
+        "calib": {
+          "n_sequences": 3,
+          "strata_targets": {
+            "dawn_dusk": 0,
+            "daytime": 2,
+            "night": 1
+          }
+        },
+        "int8_calib_frames": 50,
+        "test": {
+          "n_sequences": 3,
+          "strata_targets": {
+            "dawn_dusk": 0,
+            "daytime": 2,
+            "night": 1
+          }
+        }
+      },
+      "subsets": {
+        "calib": {
+          "n_sequences": 20,
+          "strata_targets": {
+            "dawn_dusk": 2,
+            "daytime": 12,
+            "night": 6
+          }
+        },
+        "int8_calib_frames": 500,
+        "test": {
+          "n_sequences": 40,
+          "strata_targets": {
+            "dawn_dusk": 4,
+            "daytime": 24,
+            "night": 12
+          }
+        }
+      }
+    },
+    "classmap": {
+      "ignore_mode": "all_eval_classes"
+    },
+    "env": {
+      "cuda_visible_devices": "0",
+      "energy_probe_seconds": 5,
+      "require_ort_cuda": false
+    },
+    "eval": {
+      "ignore_ioa": 0.5,
+      "max_dets": 300,
+      "perframe_iou": 0.5
+    },
+    "model": {
+      "conf": 0.001,
+      "conf_cue": 0.25,
+      "imgsz": 640,
+      "iou": 0.7,
+      "max_det": 300,
+      "name": "yolo11s",
+      "rect": false,
+      "size_rule_min_int8_speedup": 0.1,
+      "weights": "yolo11s.pt"
+    },
+    "paths": {
+      "bdd_dataset_slug": "tcjpaperdatasets",
+      "data_dir": "data",
+      "input_root": "/kaggle/input",
+      "logs_dir": "logs",
+      "results_dir": "results",
+      "work_root": "/kaggle/working"
+    },
+    "seed": 2027,
+    "slices": {
+      "crowded_percentile": 90,
+      "easy_excludes_natural_scene_change": true,
+      "easy_max_count": "median",
+      "natural_scene_change": {
+        "min_tracks": 3,
+        "new_track_ratio": 0.5
+      }
+    },
+    "splice": {
+      "max_segments": 3,
+      "min_segments": 2,
+      "n_streams": 20,
+      "segment_len": 40,
+      "smoke_n_streams": 2,
+      "window": 5
+    },
+    "step2": {
+      "int8_batch": 1,
+      "levels": [
+        "fp32",
+        "fp16",
+        "int8"
+      ],
+      "microbench_iters": 300,
+      "microbench_warmup": 50,
+      "n_sequences": 20,
+      "pt_reference": true,
+      "sanity": {
+        "fp16_vs_fp32_max_abs_pts": 0.5,
+        "int8_max_drop_pts": 3.0,
+        "int8_max_gain_pts": 0.5,
+        "trt_fp32_vs_pt_max_abs_pts": 0.5,
+        "val_check_max_abs_pts": 0.5,
+        "val_diag": {
+          "high_conf_match_min": 0.95,
+          "ours_dup_other_class_max": 0.01,
+          "theirs_dup_other_class_min": 0.1
+        }
+      },
+      "smoke_n_sequences": 2,
+      "smoke_val_check_frames": 50,
+      "split": "calib",
+      "val_check_frames": 200,
+      "warmup_frames": 50
+    }
+  },
+  "config_sha256": "035ab0724a3b064c4e6e74ef7d96123748e03a1317dcd77456cd45df69f876ed",
+  "dataset": "sanity",
+  "energy_method": "none",
+  "engine_sha256": {},
+  "env": {
+    "cuda_visible_devices": "0",
+    "git": {
+      "commit": "4d37cc15903d576e6d8b38766da96b6417137053",
+      "dirty": false,
+      "source": "git"
+    },
+    "nvidia_smi": {
+      "gpus": [
+        {
+          "clocks.max.sm": "1590 MHz",
+          "driver_version": "580.178.04",
+          "memory.total": "15360 MiB",
+          "name": "Tesla T4",
+          "persistence_mode": "Disabled",
+          "power.limit": "70.00 W",
+          "pstate": "P8",
+          "uuid": "GPU-626382c5-fcdb-1b19-c808-7413b8270cc6"
+        },
+        {
+          "clocks.max.sm": "1590 MHz",
+          "driver_version": "580.178.04",
+          "memory.total": "15360 MiB",
+          "name": "Tesla T4",
+          "persistence_mode": "Disabled",
+          "power.limit": "70.00 W",
+          "pstate": "P8",
+          "uuid": "GPU-7027c4b9-94cd-87cb-cb59-532f1cadc40c"
+        }
+      ]
+    },
+    "os": "Linux-6.18.55+-x86_64-with-glibc2.39",
+    "packages": {
+      "PyYAML": "6.0.3",
+      "numpy": "2.1.3",
+      "nvidia-ml-py": "13.615.71",
+      "onnx": "1.23.2",
+      "onnxruntime": null,
+      "onnxruntime-gpu": "1.32.0",
+      "onnxslim": "0.1.99",
+      "opencv-python": "4.14.0.94",
+      "opencv-python-headless": "4.14.0.94",
+      "pandas": "2.3.3",
+      "pyarrow": "23.0.1",
+      "pycocotools": "2.0.11",
+      "tensorrt": null,
+      "tensorrt-cu12": null,
+      "torch": "2.11.0+cu130",
+      "torchvision": "0.26.0+cu130",
+      "ultralytics": "8.4.216"
+    },
+    "platform": "kaggle",
+    "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+    "seed": 2027,
+    "timestamp_utc": "2026-11-20T14:13:44.700069+00:00",
+    "torch_cuda": {
+      "available": true,
+      "cuda_version": "13.0",
+      "device0": "Tesla T4",
+      "device_count": 1
+    }
+  },
+  "exp_id": "val_diag_02b_yolo11s",
+  "git_commit": "4d37cc15903d576e6d8b38766da96b6417137053",
+  "git_dirty": false,
+  "imgsz": 640,
+  "mode": "cache",
+  "model": "yolo11s",
+  "notes": "calib split only (Step 2); test untouched",
+  "policy": "val_diagnostic",
+  "seed": 2027,
+  "sequences": [
+    "b1c9c847-3bda4659",
+    "b2169b74-fa197951"
+  ],
+  "smoke": true,
+  "split": "calib",
+  "subset_manifest_sha256": "c6580c1cb90ee939b0b19abc87f391ccc0b79a5c0f8f72d8cf4e01916c273355",
+  "timestamp_utc": "2026-11-20T14:13:44.700069+00:00"
+}
