@@ -671,9 +671,10 @@ Built-in integrity checks:
 
 **Before running**
 1. *Add Data* → **`tcjpaperdatasets`** (images, for the cues).
-2. *Add Data* → *Your Work* → *Notebooks* → **your `02_eval_fp32_fp16_int8` notebook** → add the
-   version from the **full run** (the one whose results you committed). Its `work02/cache/` holds the
-   detections. Attach only one notebook 02 output.
+2. *Add Data* → *Your Datasets* → **`adapres-cache-02`**. This is your private dataset made from
+   `dist/adapres_cache_02.zip`: notebook 02's detection cache with a SHA-256 manifest; see the repo
+   README, "Detection cache dataset". Attaching notebook 02's output directly also works, but attach
+   only one source. Cell 3 rejects any cache that doesn't reproduce the committed detection counts.
 3. *Settings* → **Accelerator: GPU T4 x2** (convention; this notebook is CPU-bound), **Internet: On**.
    *Add-ons → Secrets* → tick **`GH_TOKEN`** for this notebook.
 4. `SMOKE_TEST = True` first (2 clips, ≈6 min including installs). Then `SMOKE_TEST = False` →

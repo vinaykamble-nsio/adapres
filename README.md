@@ -70,6 +70,18 @@ python -m venv .venv
 Every notebook needs Accelerator **GPU T4 x2**, which is pinned to one GPU; P100 is rejected
 because Pascal has no fast INT8. Internet must be **On**.
 
+## Detection cache dataset (input of notebook 03)
+
+Kaggle can't always attach another notebook's output (an interactive session's output can't be
+attached until it's saved as a version), so notebook 02's cache travels as a private dataset:
+1. Locally (local-safe): `dist/adapres_cache_02.zip` is built from the downloaded `work2/cache/`.
+   It contains `cache/yolo11s/{fp16,int8,fp32,pt_fp32}/<seq>.npz` (detections only, no images or
+   labels) and `cache/cache_manifest.json` with the SHA-256 of each file and the results commit.
+2. Kaggle → *Datasets* → *New Dataset* → upload the zip → title `adapres-cache-02` → **Private** →
+   *Create*.
+3. Notebook 03 → *Add Data* → *Your Datasets* → `adapres-cache-02`. Cell 3 checks the cache frame by
+   frame against the committed `calib_fixed_{fp16,int8}/per_frame.csv`, and stops on any mismatch.
+
 ## Deviations from PLAN.md (report these in the paper)
 
 - **D1 (PLAN §3.5, §4.1): calibration and test both come from BDD100K MOT *val*.** The Kaggle

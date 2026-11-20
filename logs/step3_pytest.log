@@ -6,3 +6,4 @@ FAILED tests/test_notebooks.py::test_notebook_structure[03_controller_dev.ipynb]
 $ pytest -q (2026-11-20T14:34:05Z)
 183 passed in 26.27s
 183 passed in 26.05s
+183 passed in 23.99s

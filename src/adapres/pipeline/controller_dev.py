@@ -56,10 +56,10 @@ def find_cache_root(input_root: str | Path, model: str, max_depth: int = 7,
             hits.append(p)
             dirnames[:] = []
     if not hits:
-        raise Step3Error(f"no cache/{model}/{{fp16,int8}} under {root}: attach notebook 02's output "
-                         "(Add Data -> Notebook Output)")
+        raise Step3Error(f"no cache/{model}/{{fp16,int8}} under {root}: attach notebook 02's cache "
+                         "(the private 'adapres-cache-02' dataset, or notebook 02's output)")
     if len(hits) > 1:
-        raise Step3Error(f"several caches found, attach only one notebook 02 output: {hits}")
+        raise Step3Error(f"several caches found, attach only one notebook 02 cache source: {hits}")
     return hits[0]
 
 
