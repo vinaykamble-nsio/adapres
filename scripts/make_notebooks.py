@@ -599,6 +599,10 @@ for k, c in DIAG["components"].items():
 pd.set_option("display.width", 250)
 print(pd.DataFrame(rows).round(3).to_string(index=False))
 print("\\nprediction similarity:", json.dumps(DIAG["prediction_similarity"], indent=1))
+print("\\nmulti-label NMS signature (same box, other class; images at max_det):")
+for who, s in DIAG["multilabel_signature"].items():
+    print(f"  {who:7s} boxes/img {s['mean_boxes_per_image']:.1f}  dup-other-class {s['frac_boxes_with_same_box_other_class']:.4f}"
+          f"  at max_det {s['frac_images_at_max_det']:.3f}")
 if "reproduces_notebook02" in DIAG:
     print("\\nreproduction of notebook 02 numbers:", json.dumps(DIAG["reproduces_notebook02"], indent=1))
 print("\\nchecks (|diff| <= %.2f pts):" % DIAG["tolerance_pts"])

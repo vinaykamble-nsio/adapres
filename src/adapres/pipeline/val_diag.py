@@ -89,6 +89,26 @@ def compare_predictions(ours: dict[int, np.ndarray], theirs: dict[int, np.ndarra
             "median_abs_score_diff": float(np.median(score_diffs)) if score_diffs else None}
 
 
+def multilabel_signature(dets_by_image: dict[int, np.ndarray], max_det: int, iou_thr: float = 0.99) -> dict:
+    """Evidence for multi-label NMS: fraction of boxes (all confidences, all classes) that have
+    another box in the same image with near-identical coordinates (IoU >= iou_thr) but a
+    different class. Single-label NMS gives ~0; multi-label NMS emits one box per class that
+    passes conf. Also: fraction of images whose prediction count hits max_det."""
+    n_box = n_dup = n_img_cap = 0
+    for d in dets_by_image.values():
+        n_box += len(d)
+        n_img_cap += int(len(d) >= max_det)
+        if len(d) < 2:
+            continue
+        iou = iou_matrix(d[:, :4], d[:, :4])
+        diff_cls = d[:, 5][:, None] != d[:, 5][None, :]
+        n_dup += int(((iou >= iou_thr) & diff_cls).any(axis=1).sum())
+    n_img = len(dets_by_image)
+    return {"n_boxes": n_box, "mean_boxes_per_image": n_box / n_img if n_img else None,
+            "frac_boxes_with_same_box_other_class": n_dup / n_box if n_box else None,
+            "frac_images_at_max_det": n_img_cap / n_img if n_img else None, "iou_thr": iou_thr, "max_det": max_det}
+
+
 def decompose(a: dict, b: dict, c: dict, tol_pts: float) -> dict:
     """a/b/c: {'map50_95': x, 'map50': y} in [0,1]. Returns components (pts), causes, checks, verdict."""
     comp = {}
@@ -128,6 +148,8 @@ def run(step, predict_fn: Callable, val_fn: Callable, tol_pts: float, committed_
     c = {k: v[k] for k in METRICS}
     out = decompose({k: a[k] for k in METRICS}, {k: b[k] for k in METRICS}, c, tol_pts)
     out["prediction_similarity"] = compare_predictions(ours, theirs)
+    md = step.cfg["model"]["max_det"]
+    out["multilabel_signature"] = {"ours": multilabel_signature(ours, md), "theirs": multilabel_signature(theirs, md)}
     out["n_frames"] = len(vs["ids"])
     out["image_ids"] = vs["ids"]
     out["ultralytics_val_args"] = v.get("args")

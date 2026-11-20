@@ -31,6 +31,15 @@ def test_compare_predictions():
     assert V.compare_predictions(a, shifted)["frac_ours_matched"] == 0.0
 
 
+def test_multilabel_signature():
+    single = {1: np.array([[0, 0, 10, 10, 0.9, 2], [20, 20, 30, 30, 0.5, 0]])}
+    multi = {1: np.array([[0, 0, 10, 10, 0.9, 2], [0, 0, 10, 10, 0.01, 7], [20, 20, 30, 30, 0.5, 0]])}
+    assert V.multilabel_signature(single, 300)["frac_boxes_with_same_box_other_class"] == 0.0
+    s = V.multilabel_signature(multi, 3)
+    assert s["frac_boxes_with_same_box_other_class"] == pytest.approx(2 / 3)
+    assert s["frac_images_at_max_det"] == 1.0 and s["mean_boxes_per_image"] == 3
+
+
 def _abc(a, b, c):
     return ({"map50_95": a[0], "map50": a[1]}, {"map50_95": b[0], "map50": b[1]}, {"map50_95": c[0], "map50": c[1]})
 
