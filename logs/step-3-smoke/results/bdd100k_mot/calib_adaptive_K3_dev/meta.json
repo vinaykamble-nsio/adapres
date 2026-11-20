@@ -1,4 +1,5 @@
 {
+  "cache_commit": "18f62138d0964cce8136071a428e2cf33c0c02ff",
   "config": {
     "bdd": {
       "images_dir_name": "track_images_val",
@@ -46,6 +47,34 @@
     "classmap": {
       "ignore_mode": "all_eval_classes"
     },
+    "controller": {
+      "H": 3,
+      "K": 2,
+      "K_down": null,
+      "K_up": null,
+      "alpha": 0.6,
+      "levels": [
+        "int8",
+        "fp16"
+      ],
+      "norm_percentiles": [
+        5,
+        95
+      ],
+      "scene_override": true,
+      "start_level": "fp16",
+      "theta_quantile": 0.5,
+      "theta_sc": 0.4,
+      "u_empty": 0.0,
+      "w_h": 0.0,
+      "weights": {
+        "c": 0.2,
+        "m": 0.2,
+        "n": 0.2,
+        "s": 0.2,
+        "u": 0.2
+      }
+    },
     "env": {
       "cuda_visible_devices": "0",
       "energy_probe_seconds": 5,
@@ -55,6 +84,12 @@
       "ignore_ioa": 0.5,
       "max_dets": 300,
       "perframe_iou": 0.5
+    },
+    "features": {
+      "canny_high": 200,
+      "canny_low": 100,
+      "hist_bins": 32,
+      "width": 320
     },
     "model": {
       "conf": 0.001,
@@ -109,27 +144,40 @@
         "int8_max_drop_pts": 3.0,
         "int8_max_gain_pts": 0.5,
         "trt_fp32_vs_pt_max_abs_pts": 0.5,
-        "val_check_max_abs_pts": 0.5
+        "val_check_max_abs_pts": 0.5,
+        "val_diag": {
+          "high_conf_match_min": 0.95,
+          "ours_dup_other_class_max": 0.01,
+          "theirs_dup_other_class_min": 0.1
+        }
       },
       "smoke_n_sequences": 2,
       "smoke_val_check_frames": 50,
       "split": "calib",
       "val_check_frames": 200,
       "warmup_frames": 50
+    },
+    "step3": {
+      "K_sweep": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "iid_p_int8": 0.5,
+      "random_seeds": 10,
+      "smoke_n_sequences": 2,
+      "split": "calib"
     }
   },
-  "config_sha256": "48a52865970da1ede8872b1f7f73849089c3e6ac9c6003e63fbd0900cc28e1db",
+  "config_sha256": "848cc66bc4066cdbd84203e0b611d7472debf4c186987064ab6c83a04bd6ee32",
   "dataset": "bdd100k_mot",
   "energy_method": "none",
-  "engine_sha256": {
-    "fp16": "8822f275829d442038d1fea6832c49c2417bf5510fafc03e200a5d7af9de1f57",
-    "fp32": "bb6af5077e1255bf2ac27561f4c5a69a531e9bd0906037ff264c394d3b31b581",
-    "int8": "c92d91268506f160e4bf33c450ea0f72b09320a5c74bd12be67cd0f4a18fa120"
-  },
+  "engine_sha256": {},
   "env": {
     "cuda_visible_devices": "0",
     "git": {
-      "commit": "18f62138d0964cce8136071a428e2cf33c0c02ff",
+      "commit": "604d0dfba82c7c1a100d64b99677e1628c75e30f",
       "dirty": false,
       "source": "git"
     },
@@ -143,7 +191,7 @@
           "persistence_mode": "Disabled",
           "power.limit": "70.00 W",
           "pstate": "P8",
-          "uuid": "GPU-654faf3c-6205-fe1c-a3d3-935ebe46008d"
+          "uuid": "GPU-ee737fb8-1d84-b021-cf22-dc48179058fd"
         },
         {
           "clocks.max.sm": "1590 MHz",
@@ -153,7 +201,7 @@
           "persistence_mode": "Disabled",
           "power.limit": "70.00 W",
           "pstate": "P8",
-          "uuid": "GPU-e0e8591a-a723-3610-4568-73f0415ea0f7"
+          "uuid": "GPU-f53ac17a-1928-a323-3c81-06bb68c8c911"
         }
       ]
     },
@@ -166,6 +214,7 @@
       "onnxruntime": null,
       "onnxruntime-gpu": "1.32.0",
       "onnxslim": "0.1.99",
+      "opencv-contrib-python": "4.14.0.94",
       "opencv-python": "4.14.0.94",
       "opencv-python-headless": "4.14.0.94",
       "pandas": "2.3.3",
@@ -180,7 +229,7 @@
     "platform": "kaggle",
     "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
     "seed": 2027,
-    "timestamp_utc": "2026-11-20T12:21:42.015000+00:00",
+    "timestamp_utc": "2026-11-20T16:02:12.577916+00:00",
     "torch_cuda": {
       "available": true,
       "cuda_version": "13.0",
@@ -188,45 +237,40 @@
       "device_count": 1
     }
   },
-  "exp_id": "calib_oracle_cheap_dev",
-  "frac_int8_f1_ge_fp16": 0.6258227848101265,
-  "frac_level": {
-    "fp16": 0.3741772151898734,
-    "int8": 0.6258227848101265
-  },
-  "git_commit": "18f62138d0964cce8136071a428e2cf33c0c02ff",
+  "exp_id": "calib_adaptive_K3_dev",
+  "git_commit": "604d0dfba82c7c1a100d64b99677e1628c75e30f",
   "git_dirty": false,
   "imgsz": 640,
-  "mode": "cache",
+  "mode": "replay",
   "model": "yolo11s",
-  "notes": "DEVELOPMENT ONLY: oracle on calib; uses GT; not a deployable policy",
-  "policy": "oracle_cheap",
+  "norm": {
+    "c": [
+      0.06730034722222222,
+      0.14344618055555558
+    ],
+    "m": [
+      0.004261097494553377,
+      0.09237867647058823
+    ],
+    "n": [
+      2.0,
+      17.0
+    ],
+    "u": [
+      0.293701171875,
+      0.5384085518973214
+    ]
+  },
+  "notes": "calib split only (Step 3 development); uses notebook 02 cache; not a locked config",
+  "policy": "adaptive_K3",
   "seed": 2027,
   "sequences": [
     "b1c9c847-3bda4659",
-    "b1d0091f-f2c2d2ae",
-    "b1d10d08-ec660956",
-    "b1d968b9-563405f4",
-    "b1e1a7b8-0aec80e8",
-    "b1ee702d-4a193906",
-    "b1f4491b-16256d7c",
-    "b1f4491b-9958bd99",
-    "b205eb4d-f84aaa1a",
-    "b20e291a-32ac11c1",
-    "b20eae11-18cd8ca2",
-    "b216243d-55963da2",
-    "b2169b74-fa197951",
-    "b21c86ac-0dc77d82",
-    "b21c86ac-2eb7ba16",
-    "b21c86ac-71205084",
-    "b2208b0f-2796a692",
-    "b23adb0d-72704b27",
-    "b23b2649-6af03cd5",
-    "b251b746-00138418"
+    "b2169b74-fa197951"
   ],
-  "smoke": false,
+  "smoke": true,
   "split": "calib",
   "subset_manifest_sha256": "c6580c1cb90ee939b0b19abc87f391ccc0b79a5c0f8f72d8cf4e01916c273355",
-  "switch_rate_per_100": 40.20253164556962,
-  "timestamp_utc": "2026-11-20T12:21:42.015000+00:00"
+  "theta": 0.3499448338550366,
+  "timestamp_utc": "2026-11-20T16:02:12.577916+00:00"
 }

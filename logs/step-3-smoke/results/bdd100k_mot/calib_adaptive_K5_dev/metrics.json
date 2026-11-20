@@ -1,0 +1,157 @@
+{
+  "all": {
+    "controller_params": {
+      "H": 3,
+      "K_down": 5,
+      "K_up": 5,
+      "alpha": 0.6,
+      "levels": [
+        "int8",
+        "fp16"
+      ],
+      "norm": {
+        "c": [
+          0.06730034722222222,
+          0.14344618055555558
+        ],
+        "m": [
+          0.004261097494553377,
+          0.09237867647058823
+        ],
+        "n": [
+          2.0,
+          17.0
+        ],
+        "u": [
+          0.293701171875,
+          0.5384085518973214
+        ]
+      },
+      "scene_override": true,
+      "start_level": "fp16",
+      "theta": 0.3499448338550366,
+      "theta_sc": 0.4,
+      "w_h": 0.0,
+      "weights": {
+        "c": 0.2,
+        "m": 0.2,
+        "n": 0.2,
+        "s": 0.2,
+        "u": 0.2
+      }
+    },
+    "ctrl_step_ms": {
+      "mean": 0.036709965511677024,
+      "median": 0.0334184999246645,
+      "n": 406,
+      "p95": 0.0596099999938815
+    },
+    "est_engine_ms_mean": 2.3246787758215883,
+    "est_note": "est_engine_ms_mean = mean of microbench median engine latency of the chosen level; excludes controller overhead and switch penalty (Step 4 measures those)",
+    "frac_level": {
+      "fp16": 0.5344827586206896,
+      "int8": 0.46551724137931033
+    },
+    "map50": 0.4449017803554037,
+    "map50_95": 0.2548064153433892,
+    "mean_f1_05": 0.5778052863541894,
+    "n_images": 406,
+    "per_class_ap50": {
+      "bicycle": 0.80100760835962,
+      "bus": 0.0015320698341139611,
+      "car": 0.6263600282903543,
+      "motorcycle": -1.0,
+      "person": 0.5897753806660105,
+      "train": -1.0,
+      "truck": 0.20583381462691938
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.44670209400750854,
+      "bus": 0.0009506726287422348,
+      "car": 0.38837784791580143,
+      "motorcycle": -1.0,
+      "person": 0.30705875607544664,
+      "train": -1.0,
+      "truck": 0.13094270608944747
+    },
+    "switch_rate_per_100": 1.477832512315271
+  },
+  "crowded": {
+    "est_engine_ms_mean": 2.661358999944241,
+    "frac_level": {
+      "fp16": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.3598758730278743,
+    "map50_95": 0.21206848918204738,
+    "mean_f1_05": 0.6031957048064615,
+    "n_images": 32,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.635296323968357,
+      "motorcycle": -1.0,
+      "person": 0.6517356250704656,
+      "train": -1.0,
+      "truck": 0.15247154307267463
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.37906955825786226,
+      "motorcycle": -1.0,
+      "person": 0.3273250625775543,
+      "train": -1.0,
+      "truck": 0.14187933589277296
+    }
+  },
+  "easy": {
+    "est_engine_ms_mean": 2.051322626058881,
+    "frac_level": {
+      "fp16": 0.1565217391304348,
+      "int8": 0.8434782608695652
+    },
+    "map50": 0.3328668623115662,
+    "map50_95": 0.1896183806972732,
+    "mean_f1_05": 0.48703123040648716,
+    "n_images": 115,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.5282171564273489,
+      "motorcycle": -1.0,
+      "person": 0.4078920836512118,
+      "train": -1.0,
+      "truck": 0.395358209167704
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.32369426056317907,
+      "motorcycle": -1.0,
+      "person": 0.21372401321259857,
+      "train": -1.0,
+      "truck": 0.22105524901331516
+    }
+  },
+  "night": {
+    "est_engine_ms_mean": null,
+    "frac_level": {},
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  },
+  "scene_change_natural": {
+    "est_engine_ms_mean": null,
+    "frac_level": {},
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  }
+}

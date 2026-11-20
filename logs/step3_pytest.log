@@ -7,3 +7,6 @@ $ pytest -q (2026-11-20T14:34:05Z)
 183 passed in 26.27s
 183 passed in 26.05s
 183 passed in 23.99s
+E           make_step2_table.TableError: runs come from different commits: {'604d0dfba82c7c1a100d64b99677e1628c75e30f', '18f62138d0964cce8136071a428e2cf33c0c02ff'}
+FAILED tests/test_step2_table.py::test_values_round_trip_from_metrics - make_...
+1 failed, 183 passed in 29.82s

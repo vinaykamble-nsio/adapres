@@ -1,0 +1,5 @@
+2026-11-20 15:51:35,238 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b2169b74-fa197951'], 'n_frames': 406, 'n_images': 406, 'n_annotations': 6332, 'slice_sizes': {'all': 406, 'easy': 115, 'crowded': 32, 'night': 0, 'scene_change_natural': 0}}
+2026-11-20 15:55:36,253 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b2169b74-fa197951'], 'n_frames': 406, 'n_images': 406, 'n_annotations': 6332, 'slice_sizes': {'all': 406, 'easy': 115, 'crowded': 32, 'night': 0, 'scene_change_natural': 0}}
+2026-11-20 16:02:19,274 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b2169b74-fa197951'], 'n_frames': 406, 'n_images': 406, 'n_annotations': 6332, 'slice_sizes': {'all': 406, 'easy': 115, 'crowded': 32, 'night': 0, 'scene_change_natural': 0}}
+2026-11-20 16:02:19,282 INFO adapres.controller_dev: cache root: /kaggle/input/datasets/vinaykamble289/adaores-cache-02/cache/yolo11s
+2026-11-20 16:03:09,140 INFO adapres.controller_dev: per-level matching done in 20s

@@ -95,8 +95,15 @@ class Step3:
         m["cache_commit"] = getattr(self, "cache_commit", None)
         return m
 
+    def _committed_ids(self) -> set[str]:
+        idx = self.repo / "results" / "index.csv"
+        return {r["exp_id"] for r in csv.DictReader(open(idx, newline=""))} if idx.exists() else set()
+
     def _write(self, exp_id: str, policy: str, metrics: dict, per_frame: list[dict] | None = None,
                extra_meta: dict | None = None, extra_files: dict | None = None) -> None:
+        if exp_id in self._committed_ids():
+            raise Step3Error(f"exp_id {exp_id!r} already exists in the committed results/index.csv "
+                             "(written by another notebook); refusing to overwrite it")
         w = ExperimentWriter(self.results_root, self._meta(exp_id, policy, extra_meta))
         w.write_json("metrics.json", metrics)
         if per_frame:
@@ -312,7 +319,9 @@ class Step3:
                                       "slice_night": row["slice_night"], "slice_crowded": row["slice_crowded"],
                                       "slice_scene_change_natural": row["slice_scene_change_natural"],
                                       "slice_easy": row["slice_easy"]})
-            self._write(f"calib_{name}_dev", name, m, per_frame, common)
+            # fixed/oracle are re-evaluations of notebook 02 policies: distinct ids, never notebook 02's
+            exp_id = f"calib_{name}_composed_dev" if name.startswith(("fixed_", "oracle_")) else f"calib_{name}_dev"
+            self._write(exp_id, name, m, per_frame, common)
 
     def sanity(self) -> dict:
         res = self.repo / "results" / "bdd100k_mot"

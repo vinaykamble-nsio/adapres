@@ -1,0 +1,30 @@
+{
+  "all_pass": true,
+  "checks": [
+    {
+      "check": "random_matched: INT8 fraction matches adaptive (|diff| <= 0.05)",
+      "detail": {
+        "adaptive": 0.4729064039408867,
+        "random_matched": 0.49261083743842365
+      },
+      "pass": true
+    },
+    {
+      "check": "random_matched: switch rate matches adaptive (within 25% relative or 1/100)",
+      "detail": {
+        "adaptive": 6.650246305418719,
+        "random_matched": 7.315270935960591
+      },
+      "pass": true
+    }
+  ],
+  "informational": {
+    "switch_rate_by_K": {
+      "adaptive_K1": 11.822660098522167,
+      "adaptive_K2": 6.650246305418719,
+      "adaptive_K3": 3.2019704433497536,
+      "adaptive_K5": 1.477832512315271
+    },
+    "switch_rate_nonincreasing_in_K": true
+  }
+}

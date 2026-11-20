@@ -75,12 +75,39 @@ def test_step3_full_dryrun(step3_env):
     pf = list(csv.DictReader(open(out / "bdd100k_mot" / "calib_adaptive_K2_dev" / "per_frame.csv")))
     assert len(pf) == info["n_frames"] and {"score_hat", "override", "proposal", "f1_05"} <= set(pf[0])
     idx = {r["exp_id"] for r in csv.DictReader(open(out / "index.csv"))}
-    assert {"calib_features_yolo11s", "calib_adaptive_K2_dev", "calib_random_matched_dev", "sanity_03_yolo11s"} <= idx
+    assert {"calib_features_yolo11s", "calib_adaptive_K2_dev", "calib_random_matched_dev", "sanity_03_yolo11s",
+            "calib_fixed_fp16_composed_dev", "calib_fixed_int8_composed_dev", "calib_oracle_cheap_composed_dev"} <= idx
+    # notebook 02's experiment ids are never written by notebook 03
+    assert not {"calib_oracle_cheap_dev", "calib_fixed_fp16", "calib_fixed_int8"} & idx - _committed(repo_dir)
+    assert not (out / "bdd100k_mot" / "calib_oracle_cheap_dev").exists()
     meta = json.loads((out / "bdd100k_mot" / "calib_adaptive_K2_dev" / "meta.json").read_text())
     assert meta["split"] == "calib" and meta["mode"] == "replay" and meta["cache_commit"] == "dryrun0002"
     # no test-split frames anywhere
     test_ids = {r["image_id"] for r in csv.DictReader(open(repo_dir / "results/bdd100k_mot/bdd_subsets/frames_test.csv"))}
     assert not test_ids & {r["image_id"] for r in pf}
+
+
+def _committed(repo_dir):
+    return {r["exp_id"] for r in csv.DictReader(open(repo_dir / "results" / "index.csv"))}
+
+
+def test_refuses_to_overwrite_committed_experiment(step3_env):
+    tmp_path, repo_dir, cache = step3_env
+    idx = repo_dir / "results" / "index.csv"
+    rows = list(csv.DictReader(open(idx)))
+    rows.append({**rows[0], "exp_id": "calib_adaptive_K2_dev"})
+    with open(idx, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader()
+        w.writerows(rows)
+    st = _make(tmp_path, repo_dir)
+    st.prepare()
+    st.locate_cache(cache)
+    st.verify_cache()
+    st.features()
+    st.fit()
+    with pytest.raises(CD.Step3Error, match="refusing to overwrite"):
+        st.policies()
 
 
 def test_features_checkpoint_resume(step3_env):

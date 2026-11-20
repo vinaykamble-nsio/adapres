@@ -1,0 +1,111 @@
+{
+  "all": {
+    "est_engine_ms_mean": 2.661358999944241,
+    "est_note": "est_engine_ms_mean = mean of microbench median engine latency of the chosen level; excludes controller overhead and switch penalty (Step 4 measures those)",
+    "frac_level": {
+      "fp16": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.44426122069031004,
+    "map50_95": 0.2543951417412468,
+    "mean_f1_05": 0.5813024423518409,
+    "n_images": 406,
+    "per_class_ap50": {
+      "bicycle": 0.80100760835962,
+      "bus": 0.0015426859820161039,
+      "car": 0.6299267411049795,
+      "motorcycle": -1.0,
+      "person": 0.5821275371819846,
+      "train": -1.0,
+      "truck": 0.20670153082295012
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.44670209400750854,
+      "bus": 0.0009560965029860141,
+      "car": 0.390175764487884,
+      "motorcycle": -1.0,
+      "person": 0.3031596945059469,
+      "train": -1.0,
+      "truck": 0.13098205920190842
+    },
+    "switch_rate_per_100": 0.0
+  },
+  "crowded": {
+    "est_engine_ms_mean": 2.661358999944241,
+    "frac_level": {
+      "fp16": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.3598758730278743,
+    "map50_95": 0.21206848918204738,
+    "mean_f1_05": 0.6031957048064615,
+    "n_images": 32,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.635296323968357,
+      "motorcycle": -1.0,
+      "person": 0.6517356250704656,
+      "train": -1.0,
+      "truck": 0.15247154307267463
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.37906955825786226,
+      "motorcycle": -1.0,
+      "person": 0.3273250625775543,
+      "train": -1.0,
+      "truck": 0.14187933589277296
+    }
+  },
+  "easy": {
+    "est_engine_ms_mean": 2.661358999944241,
+    "frac_level": {
+      "fp16": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.3355106783303813,
+    "map50_95": 0.19102783966204004,
+    "mean_f1_05": 0.4968796169726425,
+    "n_images": 115,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.5419595700122168,
+      "motorcycle": -1.0,
+      "person": 0.395257685949419,
+      "train": -1.0,
+      "truck": 0.40482545735988923
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.3264585219825356,
+      "motorcycle": -1.0,
+      "person": 0.2121289173661268,
+      "train": -1.0,
+      "truck": 0.22552391929949794
+    }
+  },
+  "night": {
+    "est_engine_ms_mean": null,
+    "frac_level": {},
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  },
+  "scene_change_natural": {
+    "est_engine_ms_mean": null,
+    "frac_level": {},
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  }
+}
