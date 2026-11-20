@@ -126,8 +126,25 @@ print("results ->", RESULTS, "| logs ->", LOGS)
 
 PIP_CELL = '''# ===================== CELL 2: PINNED INSTALLS =====================
 # Internet must be ON. Installs only what the Kaggle image lacks; torch is not touched.
+import re
+print("python", sys.version)
+REQ = os.path.join(REPO, "requirements-kaggle.txt")
+reqs = [ln.split("#")[0].strip() for ln in open(REQ) if ln.split("#")[0].strip()]
+# Preflight: resolve every pin on its own (no install) so ALL bad pins are reported in one run.
+bad = {}
+for req in reqs:
+    p = subprocess.run([sys.executable, "-m", "pip", "install", "--dry-run", "--no-deps", "--quiet",
+                        "--disable-pip-version-check", req], capture_output=True, text=True)
+    if p.returncode != 0:
+        bad[req] = "\\n".join(l for l in p.stderr.splitlines() if l.startswith("ERROR")) or p.stderr[-2000:]
+    print(f"preflight {req:40s} {'OK' if p.returncode == 0 else 'FAILED'}")
+if bad:
+    for req, err in bad.items():
+        print(f"\\n--- {req} ---\\n{err}")
+    raise RuntimeError(f"{len(bad)} pin(s) do not resolve on this Kaggle image: {list(bad)}. "
+                       "Fix them in requirements-kaggle.txt (available versions listed above).")
 r = sh([sys.executable, "-m", "pip", "install", "--quiet", "--disable-pip-version-check",
-        "-r", os.path.join(REPO, "requirements-kaggle.txt")], check=False)
+        "-r", REQ], check=False)
 with open(os.path.join(LOGS, f"{CONFIG['notebook']}_pip.log"), "w") as f:
     f.write(r.stdout + "\\n--- stderr ---\\n" + r.stderr)
 if r.returncode != 0:
