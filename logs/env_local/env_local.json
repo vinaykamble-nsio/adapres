@@ -1,0 +1,38 @@
+{
+  "timestamp_utc": "2026-11-20T06:42:43.561282+00:00",
+  "platform": "local",
+  "python": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]",
+  "os": "Windows-11-10.0.26300-SP0",
+  "cuda_visible_devices": null,
+  "seed": 2027,
+  "git": {
+    "commit": null,
+    "dirty": null,
+    "source": "unavailable: CalledProcessError(128, ['git', '-C', 'C:\\\\Private\\\\paper', 'rev-parse', 'HEAD'])"
+  },
+  "packages": {
+    "torch": null,
+    "torchvision": null,
+    "ultralytics": null,
+    "tensorrt": null,
+    "tensorrt-cu12": null,
+    "onnx": null,
+    "onnxruntime": null,
+    "onnxruntime-gpu": null,
+    "onnxslim": null,
+    "pycocotools": "2.0.11",
+    "nvidia-ml-py": null,
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "pyarrow": null,
+    "opencv-python": null,
+    "opencv-python-headless": null,
+    "PyYAML": "6.0.3"
+  },
+  "nvidia_smi": {
+    "error": "FileNotFoundError(2, 'The system cannot find the file specified', None, 2, None)"
+  },
+  "torch_cuda": {
+    "error": "ModuleNotFoundError(\"No module named 'torch'\", name='torch')"
+  }
+}

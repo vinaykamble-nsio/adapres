@@ -1,0 +1,15 @@
+# Installed on Kaggle by notebook cell 2 on top of the Kaggle GPU image.
+# torch/torchvision/numpy/pandas/opencv/pyarrow come from the Kaggle image and are
+# deliberately NOT reinstalled (replacing torch breaks the image's CUDA stack).
+# Exact installed versions are recorded in results/env/env_kaggle.json.
+# These pins are unverified until the notebook 01 SMOKE run passes: if pip
+# cannot resolve one on the current Kaggle image, the cell prints the real pip
+# error and we change the pin here (and record the change in the commit).
+ultralytics==8.3.40
+tensorrt==10.7.0
+onnx==1.17.0
+onnxslim==0.1.48
+onnxruntime-gpu==1.20.1
+pycocotools==2.0.8
+nvidia-ml-py==12.560.30
+PyYAML>=6.0

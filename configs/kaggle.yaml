@@ -1,0 +1,6 @@
+# Values baked into generated notebooks by scripts/make_notebooks.py.
+# repo_https MUST be set to the real private repo before generating notebooks;
+# while it is the placeholder, notebook cell 1 skips GitHub and only the zip
+# fallback can work (it says so loudly).
+repo_https: https://github.com/OWNER/adapres.git
+repo_ref: main

@@ -1,0 +1,71 @@
+# AdaPres default configuration. All tunables live here; nothing is hardcoded in src/.
+# Paths are Kaggle paths; notebooks may override them via their CONFIG cell.
+
+seed: 2027
+
+paths:
+  # Kaggle mounts an attached dataset at /kaggle/input/<slug>. Discovery searches
+  # under input_root for the BDD folders, so a different mount layout still works.
+  input_root: /kaggle/input
+  bdd_dataset_slug: tcjpaperdatasets
+  work_root: /kaggle/working
+  results_dir: results        # relative to work_root
+  data_dir: data              # relative to work_root (derived, never committed)
+  logs_dir: logs              # relative to work_root
+
+bdd:
+  # Folder names expected somewhere inside the attached dataset (D1 in README).
+  images_dir_name: track_images_val
+  labels_dir_name: box_track_labels_trainval
+  label_split: val            # only MOT val is used (calib and test both from val)
+  # Seeded, disjoint, stratified selection of clips from MOT val.
+  subsets:
+    calib:
+      n_sequences: 20
+      strata_targets: {daytime: 12, night: 6, dawn_dusk: 2}
+    test:
+      n_sequences: 40
+      strata_targets: {daytime: 24, night: 12, dawn_dusk: 4}
+    int8_calib_frames: 500    # sampled from calib sequences only
+  smoke:
+    calib:
+      n_sequences: 3
+      strata_targets: {daytime: 2, night: 1, dawn_dusk: 0}
+    test:
+      n_sequences: 3
+      strata_targets: {daytime: 2, night: 1, dawn_dusk: 0}
+    int8_calib_frames: 50
+
+slices:
+  crowded_percentile: 90      # of per-frame GT count on calib
+  easy_max_count: median      # GT count <= median calib GT count
+  natural_scene_change:
+    new_track_ratio: 0.5
+    min_tracks: 3
+  easy_excludes_natural_scene_change: true
+
+splice:
+  n_streams: 20
+  segment_len: 40
+  min_segments: 2
+  max_segments: 3
+  window: 5                   # frames after a splice point labelled scene_change
+  smoke_n_streams: 2
+
+classmap:
+  # How BDD ignore classes are written into COCO GT. "all_eval_classes" duplicates
+  # each ignore box as an iscrowd=1 box for every evaluated category, so a detection
+  # of any class on that region is ignored rather than counted as a false positive.
+  ignore_mode: all_eval_classes
+
+model:
+  name: yolo11s
+  imgsz: 640
+  conf: 0.001
+  iou: 0.7
+  max_det: 300
+  conf_cue: 0.25              # tau_c
+
+env:
+  cuda_visible_devices: "0"
+  energy_probe_seconds: 5

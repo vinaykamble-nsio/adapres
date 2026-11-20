@@ -1,0 +1,49 @@
+# Pre-registration (PLAN.md §1.2). Frozen before any test-split run.
+# Written 2026-11-20. Changing this file after the first test run must be
+# reported in the paper as a deviation.
+
+frozen_on: 2026-11-20
+seed: 2027
+
+primary_dataset: bdd100k_mot_2020
+splits:
+  note: >
+    Deviation D1 from PLAN §3.5: the Kaggle mirror provides MOT val images only.
+    Calib and test are disjoint, seeded, time-of-day-stratified clip sets drawn
+    from official MOT val (20 calib / 40 test). All tuning uses calib only.
+  calib: {source: mot_val, n_sequences: 20}
+  test: {source: mot_val, n_sequences: 40}
+
+primary_metrics:
+  accuracy: map50_95
+  secondary_accuracy: map50
+  cost: [lat_mean_ms, energy_dyn_mJ_per_frame]
+  stability: switch_rate_per_100
+
+delta_map_points: 0.5
+
+hypotheses:
+  H1: >
+    On the test split, the locked adaptive controller has mAP@0.5:0.95 within
+    delta (0.5 pts absolute) of fixed FP16 and lower mean per-frame latency and
+    energy than fixed FP16.
+  H2: >
+    At the same per-precision frame fractions and switch rate, adaptive beats
+    matched random switching in mAP@0.5:0.95 (cluster-bootstrap 95% CI of the
+    difference excludes 0).
+  H3: >
+    Persistence with K >= 2 reduces switch rate versus K = 1 with an
+    mAP@0.5:0.95 change smaller than 0.3 points.
+  H4: >
+    The controller picks FP16 more often on night/crowded/scene-change slices
+    than on easy, and most of the cost saving comes from the easy slice.
+  H5_nice_to_have: >
+    Under contention, the hardware-aware variant has lower p95 latency than
+    content-only adaptive.
+
+model_size_rule: >
+  Benchmark YOLO11s at 640 px on the session GPU (T4). If INT8 median engine
+  latency is < 10% below FP16, also run YOLO11m and use whichever has the larger
+  FP16->INT8 gap as primary. Recorded in results/microbench/.
+
+bootstrap: {kind: cluster_by_sequence, resamples: 1000, seed: 2027}

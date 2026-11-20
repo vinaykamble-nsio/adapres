@@ -1,0 +1,23 @@
+# Raw/derived dataset content: never committed (BDD100K licence, PLAN §10)
+data/
+cache/
+*.engine
+*.onnx
+*.pt
+*.parquet
+
+# Local env / build
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+.ipynb_checkpoints/
+
+# Kaggle downloads before they are unpacked into results/
+results_*.zip
+smoke/
+
+# Local settings
+.claude/settings.local.json

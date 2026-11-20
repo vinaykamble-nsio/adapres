@@ -1,0 +1,8 @@
+  "platform": "local",
+  "seed": 2027,
+    "commit": null,
+    "dirty": null,
+    "source": "unavailable: CalledProcessError(128, ['git', '-C', 'C:\\\\Private\\\\paper', 'rev-parse', 'HEAD'])"
+    "torch": null,
+    "pycocotools": "2.0.11",
+wrote logs\env_local\env_local.json

@@ -1,0 +1,18 @@
+[project]
+name = "adapres"
+version = "0.1.0"
+description = "Content- and hardware-aware adaptive precision for real-time video object detection"
+license = { text = "AGPL-3.0-only" }
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["E501"]
