@@ -136,9 +136,9 @@ print("results ->", RESULTS, "| logs ->", LOGS)
 '''
 
 
-PIP_CELL = r'''# ===================== CELL 2: INSTALLS (wheels only) + VERSION LOCK =====================
+PIP_CELL = r'''# ===================== CELL 2: LOCKED INSTALLS + VERSION CHECK =====================
 # Internet must be ON. Installs only what the Kaggle image lacks; torch is not touched.
-# --only-binary=:all: : never compile from source (that is what failed on onnx/tensorrt).
+# Every pin is exact (locked 2026-11-20); the cell fails if anything installs at another version.
 import re, importlib.metadata as md
 print("python", sys.version, "| torch", torch.__version__, "| torch CUDA", torch.version.cuda)
 REQ = os.path.join(REPO, "requirements-kaggle.txt")
@@ -173,9 +173,25 @@ lock = "\n".join(f"{n}=={v}" for n, v in resolved.items())
 with open(os.path.join(RESULTS, "env", "pip_resolved.txt"), "w") as f:
     f.write(f"# python {sys.version.split()[0]} torch {torch.__version__} cuda {torch.version.cuda}\n{lock}\n")
 print("RESOLVED VERSIONS (copy into requirements-kaggle.txt as exact pins):\n" + lock)
-if resolved.get("tensorrt-cu13-bindings") != resolved.get("tensorrt-cu13-libs"):
-    raise RuntimeError(f"TensorRT bindings/libs version mismatch: {resolved}")
-import tensorrt, onnx, onnxruntime
+trt_dists = ("tensorrt-cu13", "tensorrt-cu13-bindings", "tensorrt-cu13-libs")
+if len({resolved.get(d) for d in trt_dists}) != 1:
+    raise RuntimeError(f"TensorRT wrapper/bindings/libs version mismatch: {resolved}")
+pinned = {re.split(r"[<>=!~\[ ]", q)[0]: q.split("==")[-1] for q in reqs if "==" in q}
+drift = {n: (pinned[n], resolved[n]) for n in pinned if pinned[n] != resolved[n]}
+if drift:
+    raise RuntimeError(f"installed versions differ from the lock (pinned, installed): {drift}")
+try:
+    import tensorrt
+except ImportError:
+    # Diagnose instead of guessing: which top-level modules did each TensorRT dist install?
+    for d in trt_dists:
+        try:
+            tops = sorted({str(f).split("/")[0] for f in (md.files(d) or [])})
+            print(f"{d}: top-level entries {tops[:25]}")
+        except md.PackageNotFoundError:
+            print(f"{d}: NOT INSTALLED")
+    raise
+import onnx, onnxruntime
 print("import OK: tensorrt", tensorrt.__version__, "| onnx", onnx.__version__, "| onnxruntime", onnxruntime.__version__)
 print("torch still", torch.__version__, "cuda", torch.version.cuda)
 '''

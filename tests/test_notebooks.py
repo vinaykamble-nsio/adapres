@@ -66,8 +66,11 @@ def test_install_cell_wheels_only_and_locks():
     src = make_notebooks.PIP_CELL
     ast.parse(src)
     assert "pip_resolved.txt" in src and "--dry-run" in src
-    req = (REPO / "requirements-kaggle.txt").read_text()
-    assert "--only-binary=:all:" in req
+    lines = [ln.split("#")[0].strip() for ln in (REPO / "requirements-kaggle.txt").read_text().splitlines()]
+    reqs = [ln for ln in lines if ln and not ln.startswith("-")]
+    assert reqs and all("==" in r for r in reqs), f"unpinned requirement(s): {[r for r in reqs if '==' not in r]}"
+    trt = {r.split("==")[1] for r in reqs if r.startswith("tensorrt-")}
+    assert len(trt) == 1, "TensorRT wrapper/bindings/libs must share one version"
 
 
 def test_token_never_printed():
