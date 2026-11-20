@@ -1,6 +1,7 @@
-# Raw/derived dataset content: never committed (BDD100K licence, PLAN §10)
-data/
-cache/
+# Raw/derived dataset content: never committed (BDD100K licence, PLAN §10).
+# Anchored with a leading slash: an unanchored "data/" also ignored src/adapres/data/.
+/data/
+/cache/
 *.engine
 *.onnx
 *.pt
@@ -17,7 +18,7 @@ dist/
 
 # Kaggle downloads before they are unpacked into results/
 results_*.zip
-smoke/
+/smoke/
 
 # Local settings
 .claude/settings.local.json
