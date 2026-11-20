@@ -64,7 +64,7 @@ def _stats(x) -> dict:
 class Step2:
     def __init__(self, cfg: dict, smoke: bool, repo_dir: str | Path, search_root: str | Path | None = None,
                  exporter: Callable | None = None, backend_factory: Callable | None = None,
-                 image_reader: Callable | None = None, val_fn: Callable | None = None):
+                 image_reader: Callable | None = None, val_fn: Callable | None = None, exp_prefix: str = ""):
         self.cfg, self.smoke, self.repo = cfg, smoke, Path(repo_dir)
         self.seed = int(cfg["seed"])
         set_seed(self.seed)
@@ -86,6 +86,7 @@ class Step2:
         if self.env["git"]["commit"] is None:
             raise Step2Error("no git commit available; refusing to produce unattributable results")
         self.engine_info: dict[str, dict] = {}
+        self.prefix = exp_prefix  # e.g. "r04_" so a combined run never reuses earlier notebooks' exp ids
         # keep earlier experiments in index.csv (the zip replaces the repo's index on unzip)
         repo_index = self.repo / "results" / "index.csv"
         if repo_index.exists() and not (self.results_root / "index.csv").exists():
@@ -214,7 +215,7 @@ class Step2:
             self.engine_info[level] = self.exporter(weights, level, self.m["imgsz"], self.engines_dir,
                                                     int8_data=int8_yaml if level == "int8" else None,
                                                     batch=self.s2["int8_batch"])
-        w = ExperimentWriter(self.results_root, self._meta(f"engines_{self.model_name}", "engine_export",
+        w = ExperimentWriter(self.results_root, self._meta(f"{self.prefix}engines_{self.model_name}", "engine_export",
                                                            {"weights_sha256": self.weights_sha,
                                                             "int8_calib_frames": self.n_int8_frames}))
         w.write_json("engines.json", self.engine_info)
@@ -238,7 +239,7 @@ class Step2:
         if "fp16" in res and "int8" in res:
             out["size_rule"] = engines.size_rule(res["fp16"]["infer_ms"]["median"], res["int8"]["infer_ms"]["median"],
                                                  self.m["size_rule_min_int8_speedup"])
-        w = ExperimentWriter(self.results_root, self._meta(f"microbench_{self.model_name}", "microbench",
+        w = ExperimentWriter(self.results_root, self._meta(f"{self.prefix}microbench_{self.model_name}", "microbench",
                                                            dataset="microbench"))
         w.write_json("microbench.json", out)
         w.register(policy="microbench", mode="microbench", replace=True)
@@ -340,7 +341,7 @@ class Step2:
         for name in names:
             dets, tim = self.load_cache(name)
             caches[name] = dets
-            out[name] = self._write_policy(f"calib_fixed_{name}", f"fixed_{name}", [name] * len(self.image_ids),
+            out[name] = self._write_policy(f"{self.prefix}calib_fixed_{name}", f"fixed_{name}", [name] * len(self.image_ids),
                                            dets, tim)
         # development-only oracle on calib (validates the oracle on real data; not a test result)
         if "int8" in caches and "fp16" in caches:
@@ -360,7 +361,7 @@ class Step2:
                          "frac_int8_f1_ge_fp16": float(np.mean(np.asarray(f1["int8"]) >= np.asarray(f1["fp16"]))),
                          "notes": "DEVELOPMENT ONLY: oracle on calib; uses GT; not a deployable policy"}
                 out[f"oracle_{kind}_dev"] = self._write_policy(
-                    f"calib_oracle_{kind}_dev", f"oracle_{kind}", [lv[c] for c in choice], sel, None, extra)
+                    f"{self.prefix}calib_oracle_{kind}_dev", f"oracle_{kind}", [lv[c] for c in choice], sel, None, extra)
         return out
 
     def val_check_set(self, out_name: str = "val_mini") -> dict:
@@ -435,7 +436,7 @@ class Step2:
                     "multi-label NMS); binding check = notebook 02b", binding=False)
         out = {"checks": checks, "all_pass": all(c["pass"] for c in checks if c["binding"]), "map50_95_pts": g,
                "map50_pts": {k: v["all"]["map50"] * 100 for k, v in metrics.items() if not k.startswith("oracle")}}
-        w = ExperimentWriter(self.results_root, self._meta(f"sanity_02_{self.model_name}", "sanity", dataset="sanity"))
+        w = ExperimentWriter(self.results_root, self._meta(f"{self.prefix}sanity_02_{self.model_name}", "sanity", dataset="sanity"))
         w.write_json("sanity.json", out)
         if vc:
             w.write_json("val_check.json", vc)

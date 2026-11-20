@@ -79,6 +79,12 @@ def test_cell1_drops_stale_modules_before_import():
     assert src.index("del sys.modules[m]") < src.index("from adapres import config")
 
 
+def test_cell1_clears_stale_outputs_before_any_write():
+    src = make_notebooks.config_and_env_cell("x")
+    assert src.index("shutil.rmtree(d)") < src.index('print("results ->"')
+    assert "RESULTS, LOGS" in src[src.index("shutil.rmtree(d)") - 400: src.index("shutil.rmtree(d)")]
+
+
 def test_token_never_printed():
     src = make_notebooks.config_and_env_cell("x")
     # the token is only used inside a one-off git -c header and redacted in errors

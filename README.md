@@ -140,6 +140,22 @@ attached until it's saved as a version), so notebook 02's cache travels as a pri
   end-to-end gap is reported but not binding. **Result: PASS.** Our absolute mAP is therefore
   lower than a `model.val()` number on the same data (by 0.29 / 1.10 pts on these 200 frames).
 
+- **D8: notebook 04 (combined run) choices.**
+  - Engines are rebuilt in-session (Kaggle convention). Gate: calib mAP50-95 within 0.5 pts of the
+    committed Step 2 values, then everything downstream uses that one engine set.
+  - Energy protocol: the idle baseline is measured once per repeat (all engines stay resident for
+    every configuration, as in deployment). The temperature-settle wait is capped at 60 s.
+  - θ is placed at quantiles of the open-loop score, i.e. with FP16 detection cues, because the
+    closed-loop score depends on the controller's own choices.
+  - The scene-change hold covers the change frame plus the next H frames.
+  - Calibration Stage A keeps configurations whose mean per-frame F1 is within 0.02 of FP16. Stage B
+    evaluates true mAP in order of saving, in batches of 20, up to 200 configurations.
+  - The replay latency includes the sequential cue cost. Live latency and energy are measured
+    both sequentially and with the cues pipelined on a CPU thread.
+  - Locked configs are written to `results/locked/` (PLAN said `configs/locked/`), with a `.sha256`
+    each. The test stages refuse to read test data unless the main lock's hash verifies.
+- **Notebook 03 is superseded by notebook 04's stage 2** (same code, on the rebuilt engines).
+
 ## Licences
 
 Code: AGPL-3.0 (we import Ultralytics; PLAN §10). Add the official AGPL-3.0 text as `LICENSE`

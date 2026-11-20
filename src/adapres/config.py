@@ -96,6 +96,15 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "step3.K_sweep": list,
     "step3.random_seeds": int,
     "step3.iid_p_int8": (int, float),
+    "full.exp_prefix": str,
+    "full.gate_calib_map_tol_pts": (int, float),
+    "full.delta_pts": (int, float),
+    "full.calib": dict,
+    "full.smoke_calib": dict,
+    "full.test": dict,
+    "full.timing": dict,
+    "full.smoke_timing": dict,
+    "full.live_validation": dict,
 }
 
 VALID_LEVELS = ("fp32", "fp16", "int8")

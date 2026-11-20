@@ -137,7 +137,13 @@ if GIT["dirty"]:
     raise RuntimeError("repo checkout is dirty; results would not match the recorded commit")
 RESULTS = C.resolve_out(cfg, "results_dir", SMOKE_TEST)
 LOGS = C.resolve_out(cfg, "logs_dir", SMOKE_TEST)
+# Start every run with empty results/ and logs/: the final zip packs these folders, and leftovers
+# from an earlier run in the same session would otherwise be shipped as if produced now.
+# (Resumable caches live in work dirs, not here.)
 for d in (RESULTS, LOGS):
+    if os.path.isdir(d) and os.listdir(d):
+        print(f"clearing stale outputs from an earlier run in this session: {{d}} ({{len(os.listdir(d))}} entries)")
+        shutil.rmtree(d)
     os.makedirs(d, exist_ok=True)
 print("results ->", RESULTS, "| logs ->", LOGS)
 '''
@@ -767,8 +773,173 @@ def build_nb03(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
+# --------------------------------------------------------------------------- notebook 04 (combined)
+
+NB04_README = """# 04 — Full pipeline: calibrate, lock, test, latency/energy (one gated run)
+
+**Purpose.** Everything left after Step 2, in one notebook with a **gate after every stage**.
+A failed gate writes the zip and stops, so no later stage runs on unchecked inputs.
+1. **Engines + calib cache.** Rebuild TensorRT FP32/FP16/INT8 (INT8 calibrated on the 500 calib
+   frames), microbenchmark, measure the switch penalty, cache the 20 calib clips.
+   *Gate:* Step 2's binding sanity checks pass, and calib mAP is within 0.5 pts of committed Step 2.
+2. **Calib controller dev.** Cues, controller and baselines on calib (Step 3).
+   *Gate:* the Step 3 checks pass.
+3. **Calibrate + lock** (PLAN §3.5). Grid over θ quantiles × K × α × θ_sc × 71 weight vectors;
+   Stage A uses a per-frame F1 proxy, Stage B pycocotools mAP. Then the δ-Pareto locks and the
+   ablation locks (leave-one-cue-out, single-cue, no-hysteresis, no-override, asymmetric K, no EMA)
+   plus the K-sweep, all re-calibrated **on calib only**. *Gate:* every lock is written and
+   hash-verified.
+4. **Test cache**, only after a verified lock: cues and all three precisions on the 40 test clips,
+   plus the spliced scene-change streams. *Gate:* the cache is complete and test/calib are disjoint.
+5. **Latency / energy / memory** (PLAN §7). NVML energy counter, idle baseline, warm-up, 3 interleaved
+   repeats of fixed FP32/FP16/INT8 and the adaptive controller run live (**sequential** and
+   **pipelined** cues), plus live-vs-replay validation. *Gate:* every configuration is measured;
+   the live gap is reported.
+6. **Test evaluation** of the locked configs only:
+   - slices, including scene-change from the spliced streams;
+   - matched-random and i.i.d. random (10 seeds each), oracle, ablations;
+   - 1000-resample cluster-bootstrap CIs;
+   - H1–H4 computed mechanically.
+   *Gate:* replay of the locked config is exact, and every policy is evaluated.
+
+All experiment ids start with `r04_`, so nothing from notebooks 01–02b is overwritten.
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`** (no other inputs: the engines and caches are rebuilt here).
+2. *Settings* → **Accelerator: GPU T4 x2** (one GPU pinned), **Internet: On**;
+   *Add-ons → Secrets* → tick **`GH_TOKEN`**.
+3. `SMOKE_TEST = True` first: 2 calib + 2 test clips, a tiny grid, 5 s timing windows; about 30 min,
+   mostly engine builds. Then `SMOKE_TEST = False` → *Save Version → Save & Run All*: about 2–3 h,
+   with the timing stage about 30 min. These are estimates, not yet measured.
+
+**Download afterwards:** `results_04_full_pipeline.zip` → unzip into the repo root. It contains
+`results/bdd100k_mot/r04_*`, `results/locked/*.yaml(+.sha256)`, `results/microbench/r04_*`,
+`results/sanity/r04_*`, `results/r04_stages/stages.json` and `logs/`. Don't download the working
+folders.
+"""
+
+NB04_SETUP = '''# ===================== CELL 3: SETUP (weights, run object, fail-safe zip) =====================
+import logging, zipfile
+os.environ["YOLO_AUTOINSTALL"] = "False"
+logging.basicConfig(level=logging.INFO, force=True, format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+                    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(os.path.join(LOGS, "04_full.log"))])
+from adapres.pipeline.full import FullRun, GateError
+WORK = os.path.join(cfg["paths"]["work_root"], "smoke" if SMOKE_TEST else "", "work04")
+os.makedirs(WORK, exist_ok=True)
+os.chdir(WORK)
+from ultralytics import YOLO
+import ultralytics, cv2
+print("ultralytics", ultralytics.__version__, "| opencv", cv2.__version__)
+_m = YOLO(cfg["model"]["weights"])
+WEIGHTS = os.path.abspath(cfg["model"]["weights"])
+NAMES = dict(_m.names)
+del _m
+run = FullRun(cfg, SMOKE_TEST, REPO)
+
+def zip_now(tag=""):
+    zpath = f"/kaggle/working/results_04_full_pipeline{'_smoke' if SMOKE_TEST else ''}{tag}.zip"
+    base = os.path.dirname(RESULTS)
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        for top in (RESULTS, LOGS):
+            for root, _, files in os.walk(top):
+                for fn in files:
+                    full = os.path.join(root, fn)
+                    z.write(full, os.path.relpath(full, base))
+    print("wrote", zpath)
+
+def stage(fn, *a):
+    t = time.time()
+    try:
+        out = fn(*a)
+    except Exception as e:
+        print(f"\\n*** {fn.__name__} FAILED: {e!r}\\n*** writing partial results zip, then stopping ***")
+        zip_now("_PARTIAL")
+        raise
+    print(f"{fn.__name__}: {(time.time()-t)/60:.1f} min | gates so far:",
+          {k: ("PASS" if v["pass"] else "FAIL") for k, v in run.stages.items()})
+    return out
+'''
+
+NB04_S1 = '''# ===================== CELL 4: STAGE 1 - ENGINES + CALIB CACHE =====================
+S1 = stage(run.stage1_engines, WEIGHTS, NAMES)
+print("microbench median engine ms:", {k: round(v["infer_ms"]["median"], 3) for k, v in S1["microbench"]["per_backend"].items()})
+print("model-size rule:", S1["microbench"].get("size_rule"), "| switch penalty ms:", round(S1["switch_penalty"], 3))
+for c in run.stages["1_engines_calib_cache"]["checks"]:
+    print(("PASS " if c["pass"] else "FAIL ") + c["check"], c.get("detail", ""))
+'''
+
+NB04_S2 = '''# ===================== CELL 5: STAGE 2 - CALIB CONTROLLER DEV =====================
+S2 = stage(run.stage2_calib_dev)
+R = run.st.results
+for n in ("fixed_fp16", "fixed_int8", f"adaptive_K{cfg['controller']['K']}", "random_matched", "oracle_cheap"):
+    a = R[n]["all"]
+    print(f"{n:18s} mAP50-95 {100*a['map50_95']:6.2f}  INT8 frac {a['frac_level'].get('int8', 0):.2f}")
+print("feature timing:", run.st.feature_timing["featurize_ms"])
+'''
+
+NB04_S3 = '''# ===================== CELL 6: STAGE 3 - CALIBRATE + LOCK (calib only) =====================
+S3 = stage(run.stage3_calibrate)
+print("stage A configs:", S3["n_configs"], "| main status:", S3["status"])
+for name, l in run.locks.items():
+    if "saving" in l:
+        print(f"{name:22s} hash {l['hash'][:12]} calib mAP50-95 {100*(l['map50_95'] or 0):6.2f} saving {100*l['saving']:6.2f}% "
+              f"INT8 {l['frac_int8']:.2f} sw/100 {l['switch_rate_per_100']:.2f}  {l['status']}")
+print("main params:", run.locks["main"]["params"])
+'''
+
+NB04_S4 = '''# ===================== CELL 7: STAGE 4 - TEST CACHE (only after a verified lock) =====================
+S4 = stage(run.stage4_test_cache)
+print(S4)
+'''
+
+NB04_S5 = '''# ===================== CELL 8: STAGE 5 - LATENCY / ENERGY / MEMORY / LIVE VALIDATION =====================
+S5 = stage(run.stage5_timing)
+import pandas as pd
+rows = []
+for k, v in S5["summary"].items():
+    rows.append({"config": k, "lat med ms": v["latency_total_ms_median"]["median"], "lat p95 ms": v["latency_total_ms_p95"]["median"],
+                 "fps": v["throughput_fps"]["median"] if v["throughput_fps"] else None,
+                 "E_dyn mJ/frame": v["E_dyn_mJ_per_frame"]["median"] if v["E_dyn_mJ_per_frame"] else None,
+                 "E_total mJ/frame": v["E_total_mJ_per_frame"]["median"] if v["E_total_mJ_per_frame"] else None,
+                 "INT8 frac": v.get("frac_int8")})
+pd.set_option("display.width", 250)
+print(pd.DataFrame(rows).round(3).to_string(index=False))
+print("memory:", S5["memory"])
+print("live validation:", S5["live_validation"])
+'''
+
+NB04_S6 = '''# ===================== CELL 9: STAGE 6 - TEST EVALUATION (locked configs) =====================
+S6 = stage(run.stage6_test_eval)
+print("main (test):", {k: S6["main"][k] for k in ("map50_95", "map50", "map50_95_ci", "switch_rate_per_100", "lat_mean_ms",
+                                                    "energy_dyn_mJ_per_frame") if k in S6["main"]})
+print(json.dumps(S6["hypotheses"], indent=1, default=str)[:4000])
+'''
+
+
+def build_nb04(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    nb.cells = [
+        nbf.v4.new_markdown_cell(NB04_README),
+        nbf.v4.new_code_cell(config_and_env_cell("04_full_pipeline", rev=rev)),
+        nbf.v4.new_code_cell(PIP_CELL),
+        nbf.v4.new_code_cell(NB04_SETUP),
+        nbf.v4.new_code_cell(NB04_S1),
+        nbf.v4.new_code_cell(NB04_S2),
+        nbf.v4.new_code_cell(NB04_S3),
+        nbf.v4.new_code_cell(NB04_S4),
+        nbf.v4.new_code_cell(NB04_S5),
+        nbf.v4.new_code_cell(NB04_S6),
+        nbf.v4.new_code_cell(zip_cell("04_full_pipeline")),
+    ]
+    return nb
+
+
 BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02,
-            "02b_val_diagnostic.ipynb": build_nb02b, "03_controller_dev.ipynb": build_nb03}
+            "02b_val_diagnostic.ipynb": build_nb02b, "03_controller_dev.ipynb": build_nb03,
+            "04_full_pipeline.ipynb": build_nb04}
 
 
 def notebook_rev(name: str) -> str:

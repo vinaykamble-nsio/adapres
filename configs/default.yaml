@@ -105,6 +105,61 @@ step3:                         # notebook 03: controller + baselines replayed on
   random_seeds: 10
   iid_p_int8: 0.5
 
+full:                          # notebook 04: everything left, one run, gated stages (decision 2026-11-20)
+  exp_prefix: r04_            # never reuse earlier notebooks' experiment ids
+  gate_calib_map_tol_pts: 0.5 # rebuilt engines vs committed Step 2 calib mAP50-95 (all slices)
+  delta_pts: 0.5              # must equal configs/preregistration.yaml delta_map_points
+  calib:
+    theta_quantiles: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+    Ks: [1, 2, 3, 5]
+    alphas: [0.6, 1.0]
+    theta_scs: [0.3, 0.4, 0.5]
+    simplex_step: 0.25        # 70 weight vectors + equal weights
+    stage_a_f1_slack: 0.02    # proxy: mean per-frame F1 within this of FP16
+    stage_b_top: 20
+    stage_b_max: 200
+    pareto_deltas: [0.25, 0.5, 1.0, 2.0]
+    ablation_stage_b_top: 10
+    ablation_stage_b_max: 40
+    K_sweep: [1, 2, 3, 5, 8]  # theta fixed at the locked value
+  smoke_calib:
+    theta_quantiles: [0.25, 0.5, 0.75]
+    Ks: [1, 2]
+    alphas: [1.0]
+    theta_scs: [0.4]
+    simplex_step: 0.5
+    stage_b_top: 3
+    stage_b_max: 6
+    ablation_stage_b_top: 2
+    ablation_stage_b_max: 4
+  test:
+    smoke_n_sequences: 2
+    random_seeds: 10
+    bootstrap_resamples: 1000
+    smoke_bootstrap_resamples: 30
+  timing:
+    n_measure_clips: 2
+    frames_per_clip: 150
+    warmup_s: 20
+    settle_s: 60
+    idle_s: 30
+    measure_s: 60
+    repeats: 3
+    switch_penalty_frames: 200
+  smoke_timing:
+    n_measure_clips: 1
+    frames_per_clip: 40
+    warmup_s: 2
+    settle_s: 0
+    idle_s: 3
+    measure_s: 5
+    repeats: 1
+    switch_penalty_frames: 40
+  live_validation:
+    frac_clips: 0.25
+    smoke_n_clips: 1
+    soft_min_level_agreement: 0.9   # reported; below this the stage records a warning (PLAN: report the gap)
+
 step2:                         # notebook 02: fixed FP32/FP16/INT8 on calib clips only
   split: calib
   levels: [fp32, fp16, int8]

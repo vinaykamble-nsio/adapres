@@ -1,0 +1,10 @@
+src\adapres\energy\nvml_meter.py:77:97: B905 `zip()` without an explicit `strict=` parameter
+src\adapres\energy\protocol.py:98:34: B023 Function definition does not bind loop variable `rs`
+src\adapres\pipeline\full.py:20:1: I001 [*] Import block is un-sorted or un-formatted
+src\adapres\pipeline\full.py:22:8: F401 [*] `csv` imported but unused
+src\adapres\pipeline\full.py:35:29: F401 [*] `..data.subsets` imported but unused
+src\adapres\pipeline\full.py:367:13: B007 Loop control variable `sid` not used within loop body
+tests\test_fast_ap.py:8:34: F401 [*] `adapres.eval.coco_gt.build_coco_gt` imported but unused
+Found 7 errors.
+[*] 4 fixable with `--fix` (2 unsafe fixes available with `--fix --unsafe-fixes`).
+All checks passed!

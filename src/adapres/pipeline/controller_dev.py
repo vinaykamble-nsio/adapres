@@ -71,11 +71,16 @@ def _stats(a) -> dict:
 
 class Step3:
     def __init__(self, cfg: dict, smoke: bool, repo_dir: str | Path, search_root: str | Path | None = None,
-                 image_reader: Callable | None = None, featurizer_factory: Callable | None = None):
+                 image_reader: Callable | None = None, featurizer_factory: Callable | None = None,
+                 exp_prefix: str = "", ref_results: str | Path | None = None, step2: Step2 | None = None):
         cfg = json.loads(json.dumps(cfg))
         cfg["step2"]["smoke_n_sequences"] = cfg["step3"]["smoke_n_sequences"]
         self.cfg, self.smoke, self.repo = cfg, smoke, Path(repo_dir)
-        self.s2 = Step2(cfg, smoke, repo_dir, search_root=search_root)
+        self.prefix = exp_prefix
+        # reference results for the cache/metric cross-checks: committed repo results by default,
+        # or this run's own results root (combined notebook 04, rebuilt engines)
+        self.ref = Path(ref_results) if ref_results else Path(repo_dir) / "results"
+        self.s2 = step2 or Step2(cfg, smoke, repo_dir, search_root=search_root, exp_prefix=exp_prefix)
         self.image_reader = image_reader or Step2._cv2_read
         f = cfg["features"]
         self.featurizer_factory = featurizer_factory or (lambda: FrameFeaturizer(f["width"], f["canny_low"],
@@ -130,15 +135,15 @@ class Step3:
 
     def verify_cache(self) -> dict:
         """Cache must reproduce the committed per_frame.csv (n_dets@tau_c per frame) exactly."""
-        res = self.repo / "results" / "bdd100k_mot"
+        res = self.ref / "bdd100k_mot"
         self.dets = {}
         report = {}
         for lv in LEVELS:
             dets, _ = self.s2.load_cache(lv)
             self.dets[lv] = dets
             committed = {int(r["image_id"]): int(r["n_dets_025"])
-                         for r in csv.DictReader(open(res / f"calib_fixed_{lv}" / "per_frame.csv", newline=""))}
-            meta = json.loads((res / f"calib_fixed_{lv}" / "meta.json").read_text())
+                         for r in csv.DictReader(open(res / f"{self.prefix}calib_fixed_{lv}" / "per_frame.csv", newline=""))}
+            meta = json.loads((res / f"{self.prefix}calib_fixed_{lv}" / "meta.json").read_text())
             self.cache_commit = meta["git_commit"]
             mism = [i for i in self.ids
                     if int((dets[i][:, 4] >= self.tau_c).sum()) != committed.get(i, -1)]
@@ -236,7 +241,7 @@ class Step3:
         pf = {lv: perframe_f1(self.dets[lv], self.s2.gt_index, self.tau_c, self.cfg["eval"]["perframe_iou"],
                               self.cfg["eval"]["ignore_ioa"]) for lv in LEVELS}
         self.f1 = {lv: {i: pf[lv][i]["f1"] for i in self.ids} for lv in LEVELS}
-        mb = self.repo / "results" / "microbench" / f"microbench_{self.s2.model_name}" / "microbench.json"
+        mb = self.ref / "microbench" / f"{self.prefix}microbench_{self.s2.model_name}" / "microbench.json"
         self.engine_ms = ({lv: json.loads(mb.read_text())["per_backend"][lv]["infer_ms"]["median"] for lv in LEVELS}
                           if mb.exists() else {})
         out = {}
@@ -298,7 +303,7 @@ class Step3:
         common = {"theta": self.theta, "norm": {k: list(v) for k, v in self.norm.items()}}
         feats = [{"seq": self.s2.seq_of[i], "frame_idx": self.row_of[i]["frame_idx"], "image_id": i,
                   **{k: round(self.cues[i][k], 6) for k in ("m", "c", "d")}} for i in self.ids]
-        w = ExperimentWriter(self.results_root, self._meta(f"calib_features_{self.s2.model_name}", "features", common))
+        w = ExperimentWriter(self.results_root, self._meta(f"{self.prefix}calib_features_{self.s2.model_name}", "features", common))
         w.write_csv("features.csv", feats, list(feats[0].keys()))
         w.write_json("fit.json", self.fit_info)
         w.write_json("feature_timing.json", self.feature_timing)
@@ -320,20 +325,22 @@ class Step3:
                                       "slice_scene_change_natural": row["slice_scene_change_natural"],
                                       "slice_easy": row["slice_easy"]})
             # fixed/oracle are re-evaluations of notebook 02 policies: distinct ids, never notebook 02's
-            exp_id = f"calib_{name}_composed_dev" if name.startswith(("fixed_", "oracle_")) else f"calib_{name}_dev"
+            exp_id = (f"{self.prefix}calib_{name}_composed_dev" if name.startswith(("fixed_", "oracle_"))
+                      else f"{self.prefix}calib_{name}_dev")
             self._write(exp_id, name, m, per_frame, common)
 
     def sanity(self) -> dict:
-        res = self.repo / "results" / "bdd100k_mot"
+        res = self.ref / "bdd100k_mot"
         checks = []
 
         def add(name, ok, detail):
             checks.append({"check": name, "pass": bool(ok), "detail": detail})
 
-        if not self.smoke:  # committed notebook 02 metrics cover all 20 calib clips
+        same_run_ref = self.ref.resolve() != (self.repo / "results").resolve()
+        if not self.smoke or same_run_ref:  # reference must cover the same clips (committed = all 20)
             for name, exp in (("fixed_fp16", "calib_fixed_fp16"), ("fixed_int8", "calib_fixed_int8"),
                               ("oracle_cheap", "calib_oracle_cheap_dev")):
-                ref = json.loads((res / exp / "metrics.json").read_text())
+                ref = json.loads((res / f"{self.prefix}{exp}" / "metrics.json").read_text())
                 diffs = {sl: abs(self.results[name][sl]["map50_95"] - ref[sl]["map50_95"]) +
                          abs(self.results[name][sl]["map50"] - ref[sl]["map50"]) for sl in self.s2.slices}
                 add(f"{name}: composed eval == notebook 02 (all slices)", max(diffs.values()) < 1e-9,
@@ -351,7 +358,7 @@ class Step3:
         nonincreasing = all(sw[f"adaptive_K{a}"] >= sw[f"adaptive_K{b}"] - 1e-12 for a, b in zip(ks, ks[1:], strict=False))
         out = {"checks": checks, "all_pass": all(c["pass"] for c in checks),
                "informational": {"switch_rate_by_K": sw, "switch_rate_nonincreasing_in_K": bool(nonincreasing)}}
-        w = ExperimentWriter(self.results_root, self._meta(f"sanity_03_{self.s2.model_name}", "sanity",
+        w = ExperimentWriter(self.results_root, self._meta(f"{self.prefix}sanity_03_{self.s2.model_name}", "sanity",
                                                            dataset="sanity"))
         w.write_json("sanity.json", out)
         w.register(policy="sanity", mode="check", replace=True)
