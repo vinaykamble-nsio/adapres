@@ -2,21 +2,24 @@
 # torch/torchvision/numpy/pandas/opencv/pyarrow come from the Kaggle image and are
 # deliberately NOT reinstalled (replacing torch breaks the image's CUDA stack).
 #
+# Kaggle image seen 2026-11-20: Python 3.13.16, torch 2.11.0+cu130 (CUDA 13.0).
 # History (2026-11-20 Kaggle runs):
 #  - onnxruntime-gpu==1.20.1 does not exist on PyPI.
-#  - onnx==1.17.0 and tensorrt-cu12==10.7.0 have no wheels for the Kaggle Python, so pip
-#    tried to compile them from source and failed.
-# Therefore: wheels only (never compile), and version RANGES for one lock run. Cell 2
-# writes results/env/pip_resolved.txt; those exact versions then replace the ranges
-# below (one-time lock, recorded in git). TensorRT is installed via its wheel packages
-# (bindings provide `import tensorrt`) instead of the `tensorrt-cu12` sdist wrapper.
+#  - onnx==1.17.0 / tensorrt-cu12==10.7.0: no Python 3.13 wheels -> source build failed.
+#  - tensorrt-cu12-libs: no wheel on PyPI (the libs wheels are hosted on pypi.nvidia.com),
+#    and cu12 is the wrong CUDA major for this image anyway -> use tensorrt-cu13-*.
+# Wheels only (never compile). Ranges are for ONE lock run: cell 2 writes
+# results/env/pip_resolved.txt and those exact versions then replace the ranges below.
 --only-binary=:all:
+--extra-index-url https://pypi.nvidia.com
 ultralytics>=8.3.40,<8.5
-tensorrt-cu12-bindings>=10.7,<11
-tensorrt-cu12-libs>=10.7,<11
+tensorrt-cu13-bindings>=10.13,<11
+tensorrt-cu13-libs>=10.13,<11
 onnx>=1.17,<2
 onnxslim>=0.1.48,<0.2
-onnxruntime-gpu>=1.22,<2
+# ORT GPU wheels target CUDA 12; the extras pull CUDA 12 runtime + cuDNN 9 wheels so the
+# CUDA EP can load next to torch's CUDA 13 (different sonames). Fallback path only.
+onnxruntime-gpu[cuda,cudnn]>=1.22,<2
 pycocotools>=2.0.8,<3
 nvidia-ml-py>=12.560,<14
 PyYAML>=6.0

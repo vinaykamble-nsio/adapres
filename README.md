@@ -91,6 +91,12 @@ because Pascal has no fast INT8. Internet must be **On**.
   `stats[0]`. Since PLAN uses `max_det=300`, AP is read from `COCOeval.eval['precision']`
   (`eval/coco_metrics.py`), not from `stats`.
 
+- **D5: software stack.** The Kaggle image (2026-11-20) has Python 3.13 and torch 2.11 built for
+  CUDA 13.0, so TensorRT uses the `tensorrt-cu13-*` wheels from `pypi.nvidia.com`. ONNX Runtime
+  GPU (CUDA 12 build plus its own CUDA libraries) is only the INT8 fallback. If its CUDA probe
+  fails, that is recorded and shown as a warning, not a stop (`env.require_ort_cuda`). Exact
+  versions are locked in `requirements-kaggle.txt` after the first successful run.
+
 ## Licences
 
 Code: AGPL-3.0 (we import Ultralytics; PLAN §10). Add the official AGPL-3.0 text as `LICENSE`

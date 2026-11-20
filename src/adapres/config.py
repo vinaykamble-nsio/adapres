@@ -45,6 +45,7 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "model.name": str,
     "model.imgsz": int,
     "env.cuda_visible_devices": str,
+    "env.require_ort_cuda": bool,
 }
 
 VALID_STRATA = {"daytime", "night", "dawn_dusk"}

@@ -38,8 +38,18 @@ def onnxruntime_probe() -> dict:
         import numpy as np
         import onnxruntime as ort
 
+        out = {"ok": True, "version": ort.__version__}
+        # ORT >= 1.21 can preload the CUDA/cuDNN libs installed by the [cuda,cudnn] extras.
+        if hasattr(ort, "preload_dlls"):
+            try:
+                ort.preload_dlls()
+                out["preload_dlls"] = "ok"
+            except Exception as e:  # noqa: BLE001 - recorded
+                out["preload_dlls"] = f"error: {e!r}"
+        else:
+            out["preload_dlls"] = "not available in this ORT version"
         provs = ort.get_available_providers()
-        out = {"ok": True, "version": ort.__version__, "available_providers": provs}
+        out["available_providers"] = provs
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "tiny.onnx"
             _tiny_onnx(p)

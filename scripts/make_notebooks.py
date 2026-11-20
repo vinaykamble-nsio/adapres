@@ -143,7 +143,8 @@ import re, importlib.metadata as md
 print("python", sys.version, "| torch", torch.__version__, "| torch CUDA", torch.version.cuda)
 REQ = os.path.join(REPO, "requirements-kaggle.txt")
 lines = [ln.split("#")[0].strip() for ln in open(REQ)]
-opts = [ln for ln in lines if ln.startswith("-")]
+opts = [tok for ln in lines if ln.startswith("-") for tok in ln.split()]  # e.g. --extra-index-url URL
+print("pip options:", opts)
 reqs = [ln for ln in lines if ln and not ln.startswith("-")]
 PIP = [sys.executable, "-m", "pip", "install", "--disable-pip-version-check"]
 # Preflight: resolve each requirement on its own (no install) so ALL failures show in one run.
@@ -172,7 +173,7 @@ lock = "\n".join(f"{n}=={v}" for n, v in resolved.items())
 with open(os.path.join(RESULTS, "env", "pip_resolved.txt"), "w") as f:
     f.write(f"# python {sys.version.split()[0]} torch {torch.__version__} cuda {torch.version.cuda}\n{lock}\n")
 print("RESOLVED VERSIONS (copy into requirements-kaggle.txt as exact pins):\n" + lock)
-if resolved.get("tensorrt-cu12-bindings") != resolved.get("tensorrt-cu12-libs"):
+if resolved.get("tensorrt-cu13-bindings") != resolved.get("tensorrt-cu13-libs"):
     raise RuntimeError(f"TensorRT bindings/libs version mismatch: {resolved}")
 import tensorrt, onnx, onnxruntime
 print("import OK: tensorrt", tensorrt.__version__, "| onnx", onnx.__version__, "| onnxruntime", onnxruntime.__version__)
@@ -245,6 +246,9 @@ failed = {k: v.get("error") for k, v in env["probes"].items() if not v.get("ok")
 for k, v in env["probes"].items():
     if not v.get("ok") and "traceback" in v:
         print(f"--- {k} traceback ---\\n{v['traceback']}")
+if "onnxruntime" in failed and not cfg["env"]["require_ort_cuda"]:
+    print("WARNING: ONNX Runtime CUDA probe failed (recorded in env_kaggle.json). ORT is only the INT8 "
+          "fallback path; continuing because env.require_ort_cuda is false. Error:", failed.pop("onnxruntime"))
 if failed:
     raise RuntimeError(f"GPU stack probes failed (env_kaggle.json saved): {failed}")
 nv = env["probes"]["nvml"]

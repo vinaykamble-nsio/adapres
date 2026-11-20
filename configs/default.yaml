@@ -69,3 +69,7 @@ model:
 env:
   cuda_visible_devices: "0"
   energy_probe_seconds: 5
+  # TensorRT (via Ultralytics) is the main path. ONNX Runtime GPU is only the INT8
+  # fallback (PLAN §9 risk triggers), so a failed ORT CUDA probe is recorded and
+  # printed as a WARNING instead of stopping the notebook. Set true to make it fatal.
+  require_ort_cuda: false
