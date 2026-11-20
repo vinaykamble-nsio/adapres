@@ -1,0 +1,11 @@
+# python 3.13.16 torch 2.11.0+cu130 cuda 13.0
+ultralytics==8.4.216
+tensorrt-cu13==10.16.1.11
+tensorrt-cu13-bindings==10.16.1.11
+tensorrt-cu13-libs==10.16.1.11
+onnx==1.23.2
+onnxslim==0.1.99
+onnxruntime-gpu==1.32.0
+pycocotools==2.0.11
+nvidia-ml-py==13.615.71
+PyYAML==6.0.3

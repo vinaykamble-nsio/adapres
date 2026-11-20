@@ -1,0 +1,2 @@
+2026-11-20 07:36:20,121 INFO adapres.build_bdd_subsets: layout: labels=/kaggle/input/datasets/tcjpaperdatasets/tcjpaperdatasets/BDD100K/box_track_labels_trainval/bdd100k/labels/box_track_20/val (200 json) images=/kaggle/input/datasets/tcjpaperdatasets/tcjpaperdatasets/BDD100K/track_images_val/bdd100k/images/track/val (200 video dirs)
+2026-11-20 07:39:20,618 INFO adapres.build_bdd_subsets: wrote /kaggle/working/smoke/results/bdd100k_mot/bdd_subsets

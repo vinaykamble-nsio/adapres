@@ -1,0 +1,10 @@
+{
+  "calib_agreement": null,
+  "crowded_percentile": 90,
+  "easy_max_count": 9.0,
+  "fit_on": "calib",
+  "method": "otsu_calib_luma",
+  "n_calib_frames": 606,
+  "n_crowd": 23.0,
+  "tau_night": 62.255859375
+}

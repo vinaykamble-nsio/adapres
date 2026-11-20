@@ -1,0 +1,53 @@
+{
+  "seed": 2027,
+  "selection_sha256": "eb3b168c38c195f9f22f42377b9b5c9484b9ea0cebd50f3f59d083c3f93106c9",
+  "seq_timeofday": {
+    "b1d0a191-06deb55d": "daytime",
+    "b1d7b3ac-0bdb47dc": "daytime",
+    "b1f4491b-33824f31": "daytime",
+    "b215943a-10e44587": "daytime",
+    "b24c9ee6-e43a6e8b": "night",
+    "b2505382-1423f56a": "night"
+  },
+  "shortfalls": {
+    "calib": {},
+    "test": {}
+  },
+  "smoke": true,
+  "source_split": "bdd100k_mot_2020/val",
+  "splits": {
+    "calib": [
+      "b1d7b3ac-0bdb47dc",
+      "b1f4491b-33824f31",
+      "b2505382-1423f56a"
+    ],
+    "test": [
+      "b1d0a191-06deb55d",
+      "b215943a-10e44587",
+      "b24c9ee6-e43a6e8b"
+    ]
+  },
+  "strata_counts": {
+    "calib": {
+      "dawn_dusk": 0,
+      "daytime": 2,
+      "night": 1
+    },
+    "test": {
+      "dawn_dusk": 0,
+      "daytime": 2,
+      "night": 1
+    }
+  },
+  "targets": {
+    "calib": {
+      "daytime": 2,
+      "night": 1
+    },
+    "test": {
+      "daytime": 2,
+      "night": 1
+    }
+  },
+  "timeofday_source": "median_frame_luma_otsu"
+}

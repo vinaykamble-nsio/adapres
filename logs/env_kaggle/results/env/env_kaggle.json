@@ -1,0 +1,112 @@
+{
+  "timestamp_utc": "2026-11-20T07:35:29.098035+00:00",
+  "platform": "kaggle",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "os": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "cuda_visible_devices": "0",
+  "seed": 2027,
+  "git": {
+    "commit": "098a72578bae7b4ff16a8d644055fcced2f93483",
+    "dirty": false,
+    "source": "git"
+  },
+  "packages": {
+    "torch": "2.11.0+cu130",
+    "torchvision": "0.26.0+cu130",
+    "ultralytics": "8.4.216",
+    "tensorrt": null,
+    "tensorrt-cu12": null,
+    "onnx": "1.23.2",
+    "onnxruntime": null,
+    "onnxruntime-gpu": "1.32.0",
+    "onnxslim": "0.1.99",
+    "pycocotools": "2.0.11",
+    "nvidia-ml-py": "13.615.71",
+    "numpy": "2.1.3",
+    "pandas": "2.3.3",
+    "pyarrow": "23.0.1",
+    "opencv-python": "4.14.0.94",
+    "opencv-python-headless": "4.14.0.94",
+    "PyYAML": "6.0.3"
+  },
+  "nvidia_smi": {
+    "gpus": [
+      {
+        "name": "Tesla T4",
+        "uuid": "GPU-0ef53d5d-19dc-63f7-5fbb-6e88c5740e87",
+        "driver_version": "580.178.04",
+        "memory.total": "15360 MiB",
+        "power.limit": "70.00 W",
+        "clocks.max.sm": "1590 MHz",
+        "persistence_mode": "Disabled",
+        "pstate": "P0"
+      },
+      {
+        "name": "Tesla T4",
+        "uuid": "GPU-4135d909-ad78-278b-9b7c-2f97fcb7f892",
+        "driver_version": "580.178.04",
+        "memory.total": "15360 MiB",
+        "power.limit": "70.00 W",
+        "clocks.max.sm": "1590 MHz",
+        "persistence_mode": "Disabled",
+        "pstate": "P8"
+      }
+    ]
+  },
+  "torch_cuda": {
+    "available": true,
+    "cuda_version": "13.0",
+    "device_count": 1,
+    "device0": "Tesla T4"
+  },
+  "repo_source": "github",
+  "probes": {
+    "onnxruntime": {
+      "ok": true,
+      "version": "1.32.0",
+      "preload_dlls": "ok",
+      "available_providers": [
+        "TensorrtExecutionProvider",
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "session_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "output_shape": [
+        1,
+        64
+      ],
+      "cuda_ep_active": true
+    },
+    "tensorrt": {
+      "ok": true,
+      "version": "10.16.1.11",
+      "builds": {
+        "fp32": {
+          "bytes": 31476,
+          "build_s": 1.362
+        },
+        "fp16": {
+          "bytes": 31476,
+          "build_s": 0.326
+        }
+      },
+      "platform_has_fast_fp16": true,
+      "platform_has_fast_int8": true
+    },
+    "nvml": {
+      "ok": true,
+      "gpu": "Tesla T4",
+      "driver": "580.178.04",
+      "energy_counter_supported": true,
+      "energy_delta_mJ": 328850,
+      "energy_counter_mean_W": 65.76,
+      "power_samples_n": 63,
+      "power_sample_mean_W": 67.23,
+      "elapsed_s": 5.000905079999939,
+      "power_limit_W": 70.0
+    }
+  }
+}

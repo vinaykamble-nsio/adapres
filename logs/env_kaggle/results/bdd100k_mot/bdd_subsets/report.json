@@ -1,0 +1,92 @@
+{
+  "coco_gt": {
+    "calib": {
+      "gt_as_det_map50": 1.0,
+      "gt_as_det_map50_95": 1.0,
+      "n_annotations": 7557,
+      "n_crowd_or_ignore": 480,
+      "n_images": 606,
+      "path_relative_to_work_root": "smoke/data/bdd/coco_gt_calib.json"
+    },
+    "splice": {
+      "gt_as_det_map50": 1.0,
+      "gt_as_det_map50_95": 1.0,
+      "n_annotations": 1894,
+      "n_crowd_or_ignore": 301,
+      "n_images": 200,
+      "path_relative_to_work_root": "smoke/data/bdd/coco_gt_splice.json"
+    },
+    "test": {
+      "gt_as_det_map50": 1.0,
+      "gt_as_det_map50_95": 1.0,
+      "n_annotations": 6207,
+      "n_crowd_or_ignore": 708,
+      "n_images": 607,
+      "path_relative_to_work_root": "smoke/data/bdd/coco_gt_test.json"
+    }
+  },
+  "frames": {
+    "calib": {
+      "n_frames": 606,
+      "slice_crowded": 63,
+      "slice_easy": 184,
+      "slice_night": 199,
+      "slice_scene_change": 0,
+      "slice_scene_change_natural": 2
+    },
+    "splice": {
+      "n_frames": 200,
+      "slice_crowded": 26,
+      "slice_easy": 75,
+      "slice_night": 80,
+      "slice_scene_change": 15,
+      "slice_scene_change_natural": 0
+    },
+    "test": {
+      "n_frames": 607,
+      "slice_crowded": 52,
+      "slice_easy": 169,
+      "slice_night": 202,
+      "slice_scene_change": 0,
+      "slice_scene_change_natural": 4
+    }
+  },
+  "int8_calib_frames": 50,
+  "layout": {
+    "image_root": "/kaggle/input/datasets/tcjpaperdatasets/tcjpaperdatasets/BDD100K/track_images_val/bdd100k/images/track/val",
+    "label_dir": "/kaggle/input/datasets/tcjpaperdatasets/tcjpaperdatasets/BDD100K/box_track_labels_trainval/bdd100k/labels/box_track_20/val",
+    "n_image_dirs": 200,
+    "n_label_files": 200
+  },
+  "luma_fallback": {
+    "n_sequences": 200,
+    "otsu_threshold": 74.208984375
+  },
+  "n_eligible": 200,
+  "n_streams": 2,
+  "n_videos_parsed": 200,
+  "selection_strata_counts": {
+    "calib": {
+      "dawn_dusk": 0,
+      "daytime": 2,
+      "night": 1
+    },
+    "test": {
+      "dawn_dusk": 0,
+      "daytime": 2,
+      "night": 1
+    }
+  },
+  "sequences_with_missing_images": {},
+  "shortfalls": {
+    "calib": {},
+    "test": {}
+  },
+  "smoke": true,
+  "timeofday_counts_all_eligible": {
+    "dawn_dusk": 0,
+    "daytime": 124,
+    "night": 76
+  },
+  "timeofday_source": "median_frame_luma_otsu"
+}

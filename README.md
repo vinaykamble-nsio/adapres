@@ -79,8 +79,10 @@ because Pascal has no fast INT8. Internet must be **On**.
   are fit on calib only. Test is touched once per locked config. Consequence: calib and test share
   the official split's capture distribution, which is slightly less conservative than
   train→val. `selection.json` records the exact clip IDs and its SHA-256.
-- **D2 (only if triggered): time-of-day fallback.** If the label JSON has no `timeofday`
-  attribute, strata come from Otsu on each sequence's median-frame luma. Luma cannot separate
+- **D2 (triggered, confirmed on Kaggle 2026-11-20): time-of-day fallback.** BDD MOT `box_track_20`
+  labels carry no `timeofday` attribute, so strata come from Otsu on each sequence's median-frame
+  luma (all 200 val clips; luma only, no labels or outcomes). Values are in
+  `results/bdd100k_mot/bdd_subsets/report.json`. Luma cannot separate
   dawn/dusk, so that target is folded into daytime. `selection.json` and `report.json` record
   which method was used.
 - **D3: ignore regions.** BDD `other person` / `other vehicle` / `trailer` boxes are written as
