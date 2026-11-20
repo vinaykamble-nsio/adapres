@@ -519,7 +519,119 @@ def build_nb02(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
-BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02}
+# --------------------------------------------------------------------------- notebook 02b
+
+NB02B_README = """# 02b — Diagnostic: pipeline vs Ultralytics `model.val()` gap
+
+**Purpose.** Notebook 02 found that our pipeline and Ultralytics `model.val()` differ by 0.29 pts
+in mAP@0.5:0.95 and by **1.10 pts in mAP@0.5** on the same 200 calib frames. This notebook works
+out whether the gap comes from **our predictions** or from **our metric implementation**.
+It runs PyTorch FP32 YOLO11s with identical settings (conf 0.001, NMS IoU 0.7, max_det 300,
+640 px square letterbox, batch 1) on the **same seeded 200-frame calib mini-set** and computes:
+- **A**: our predictions (`YOLO.predict`), scored by our evaluator (pycocotools).
+- **B**: Ultralytics' own `model.val()` predictions (`save_json`), scored by our evaluator.
+- **C**: the same `model.val()` predictions, scored by Ultralytics' metric.
+
+**B − A** is the prediction part and **C − B** the metric part, reported for both mAP@0.5:0.95
+and mAP@0.5. Agreement now requires **both** metrics within 0.5 pts. If the end-to-end gap comes
+from the metric implementation, the 0.5 pt rule applies to |C − B| (identical predictions)
+instead. **Calib frames only; the test split is not touched.** No TensorRT engines are needed.
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`**.
+2. *Settings* → **Accelerator: GPU T4 x2** (one GPU pinned), **Internet: On**.
+3. *Add-ons → Secrets* → tick **`GH_TOKEN`** for **this** notebook (Secrets attach per notebook).
+4. Run with `SMOKE_TEST = True` (50 frames, ≈5 min including installs). If it passes, set
+   `SMOKE_TEST = False` → *Save Version → Save & Run All* (200 frames, ≈6–8 min).
+
+**Download afterwards:** `results_02b_val_diagnostic.zip` → unzip into the repo root
+(`results/sanity/val_diag_02b_yolo11s/diag.json`, `logs/`). Don't download the notebook's
+working folder: it contains BDD frames.
+"""
+
+NB02B_RUN = '''# ===================== CELL 4: A / B / C ON THE SAME 200 CALIB FRAMES =====================
+from pathlib import Path
+from adapres.models.engines import UltralyticsBackend
+from adapres.pipeline import val_diag
+t = time.time()
+mc = cfg["model"]
+pt = UltralyticsBackend("pt_fp32", WEIGHTS, mc["imgsz"], mc["conf"], mc["iou"], mc["max_det"], mc["rect"])
+first = step.paths[step.image_ids[0]]
+for _ in range(10):
+    pt.predict(str(first))                      # warm-up, discarded
+
+CAPTURED = {}
+def _grab(validator):
+    CAPTURED["jdict"] = list(getattr(validator, "jdict", []) or [])
+    CAPTURED["save_dir"] = str(getattr(validator, "save_dir", ""))
+    CAPTURED["args"] = {k: getattr(validator.args, k, None) for k in
+                        ("conf", "iou", "max_det", "imgsz", "batch", "rect", "half", "save_json",
+                         "agnostic_nms", "single_cls", "augment", "split")}
+
+def val_fn(yaml_path):
+    m = YOLO(WEIGHTS)
+    m.add_callback("on_val_end", _grab)
+    r = m.val(data=str(yaml_path), imgsz=mc["imgsz"], batch=1, conf=mc["conf"], iou=mc["iou"],
+              max_det=mc["max_det"], rect=False, half=False, plots=False, save_json=True, verbose=False,
+              device=0, project=os.path.join(WORK, "runs02b"), name="val", exist_ok=True)
+    jd = CAPTURED.get("jdict")
+    if not jd:  # fall back to the file Ultralytics writes after on_val_end
+        pj = Path(CAPTURED.get("save_dir", "")) / "predictions.json"
+        print("jdict empty in callback; reading", pj, "exists:", pj.exists())
+        jd = json.loads(pj.read_text()) if pj.exists() else []
+    return {"map50_95": float(r.box.map), "map50": float(r.box.map50), "jdict": jd, "args": CAPTURED.get("args")}
+
+committed = os.path.join(REPO, "results", "sanity", f"sanity_02_{cfg['model']['name']}", "val_check.json")
+committed = json.load(open(committed)) if os.path.exists(committed) else None
+DIAG = val_diag.run(step, lambda p: pt.predict(p)[0], val_fn, cfg["step2"]["sanity"]["val_check_max_abs_pts"],
+                    committed)
+print("model.val() args actually used:", DIAG["ultralytics_val_args"])
+print(f"diagnostic: {time.time()-t:.0f}s")
+'''
+
+NB02B_REPORT = '''# ===================== CELL 5: REPORT =====================
+import pandas as pd
+rows = []
+for k, c in DIAG["components"].items():
+    rows.append({"metric": k, "A ours/ours": c["A_ours_pred_ours_metric"], "B theirs/ours": c["B_their_pred_ours_metric"],
+                 "C theirs/theirs": c["C_their_pred_their_metric"], "pred comp B-A": c["prediction_component_pts"],
+                 "metric comp C-B": c["metric_component_pts"], "end-to-end C-A": c["end_to_end_pts"], "cause": c["cause"]})
+pd.set_option("display.width", 250)
+print(pd.DataFrame(rows).round(3).to_string(index=False))
+print("\\nprediction similarity:", json.dumps(DIAG["prediction_similarity"], indent=1))
+if "reproduces_notebook02" in DIAG:
+    print("\\nreproduction of notebook 02 numbers:", json.dumps(DIAG["reproduces_notebook02"], indent=1))
+print("\\nchecks (|diff| <= %.2f pts):" % DIAG["tolerance_pts"])
+for name, ch in DIAG["checks"].items():
+    print(f"  {name:22s} " + "  ".join(f"{k}: {'PASS' if v else 'FAIL'}" for k, v in ch.items()))
+print(f"\\nBINDING CHECK: {DIAG['binding_check']} -> {'PASS' if DIAG['binding_pass'] else 'FAIL'}")
+'''
+
+NB02B_AFTER_ZIP = '''if not DIAG["binding_pass"]:
+    raise RuntimeError(f"binding agreement check '{DIAG['binding_check']}' failed (zip written); see the report cell")
+'''
+
+
+def build_nb02b(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    prepare = NB02_PREPARE.replace("02_eval.log", "02b_val_diag.log").replace("work02", "work02b")
+    nb.cells = [
+        nbf.v4.new_markdown_cell(NB02B_README),
+        nbf.v4.new_code_cell(config_and_env_cell("02b_val_diagnostic", NB02_EXTRA_CONFIG, rev=rev)),
+        nbf.v4.new_code_cell(PIP_CELL),
+        nbf.v4.new_code_cell(prepare),
+        nbf.v4.new_code_cell(NB02B_RUN),
+        nbf.v4.new_code_cell(NB02B_REPORT),
+        nbf.v4.new_code_cell(zip_cell("02b_val_diagnostic", NB02B_AFTER_ZIP)),
+    ]
+    return nb
+
+
+BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02,
+            "02b_val_diagnostic.ipynb": build_nb02b}
 
 
 def notebook_rev(name: str) -> str:

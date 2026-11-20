@@ -2,6 +2,8 @@
 # Anchored with a leading slash: an unanchored "data/" also ignored src/adapres/data/.
 /data/
 /cache/
+# Kaggle notebook working dirs if downloaded (contain BDD frames, labels, engines)
+/work*/
 *.engine
 *.onnx
 *.pt

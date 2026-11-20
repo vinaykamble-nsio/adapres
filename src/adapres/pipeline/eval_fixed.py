@@ -363,9 +363,9 @@ class Step2:
                     f"calib_oracle_{kind}_dev", f"oracle_{kind}", [lv[c] for c in choice], sel, None, extra)
         return out
 
-    def val_check(self) -> dict:
-        """PLAN §5.3: our pycocotools pipeline vs Ultralytics model.val() on the same frames
-        with the PyTorch FP32 model (D6: BDD calib frames, crowd/ignore boxes removed in both)."""
+    def val_check_set(self, out_name: str = "val_mini") -> dict:
+        """The seeded mini-set for the model.val() comparison (same frames in notebooks 02
+        and 02b): image ids, COCO GT without crowd/ignore boxes, YOLO-format dataset."""
         n = self.s2["smoke_val_check_frames"] if self.smoke else self.s2["val_check_frames"]
         keys = subsets.sample_frames([(self.seq_of[i], i) for i in self.image_ids], min(n, len(self.image_ids)),
                                      self.seed)
@@ -378,15 +378,26 @@ class Step2:
             items_gt.append((i, fr, int(r["W"]), int(r["H"])))
             items_y.append((r["rel_path"], fr, int(r["W"]), int(r["H"])))
         gt = build_coco_gt(items_gt, "none", description="val_check", drop_crowd=True)
-        ev = CocoEvaluator(gt, self.cfg["eval"]["max_dets"])
-        dets, _ = self.load_cache("pt_fp32")
-        ours = ev.evaluate(dets_to_coco_results({i: dets[i] for i in ids}))
         from ..data.classmap import EVAL_CATEGORIES
+        from ..data.yolo_format import flat_name
 
         names = getattr(self, "coco_names", None) or {c: n for _, (n, c) in EVAL_CATEGORIES.items()}
-        yaml_path = write_yolo_dataset(self.work / "val_mini", items_y, self.layout.image_root, names)
-        theirs = self.val_fn(yaml_path)
-        out = {"n_frames": len(ids), "ours": {k: ours[k] for k in ("map50_95", "map50")}, "ultralytics_val": theirs,
+        yaml_path = write_yolo_dataset(self.work / out_name, items_y, self.layout.image_root, names)
+        stem_to_id = {Path(flat_name(r)).stem: i for (r, *_), i in zip(items_y, ids, strict=True)}
+        return {"ids": ids, "gt": gt, "yaml": yaml_path, "stem_to_id": stem_to_id,
+                "paths": {i: self.paths[i] for i in ids}}
+
+    def val_check(self) -> dict:
+        """PLAN §5.3: our pycocotools pipeline vs Ultralytics model.val() on the same frames
+        with the PyTorch FP32 model (D6: BDD calib frames, crowd/ignore boxes removed in both).
+        Both mAP50-95 and mAP50 are compared (sanity requires both)."""
+        vs = self.val_check_set()
+        ev = CocoEvaluator(vs["gt"], self.cfg["eval"]["max_dets"])
+        dets, _ = self.load_cache("pt_fp32")
+        ours = ev.evaluate(dets_to_coco_results({i: dets[i] for i in vs["ids"]}))
+        theirs = self.val_fn(vs["yaml"])
+        out = {"n_frames": len(vs["ids"]), "ours": {k: ours[k] for k in ("map50_95", "map50")},
+               "ultralytics_val": theirs,
                "abs_diff_pts": {k: 100 * abs(ours[k] - theirs[k]) for k in ("map50_95", "map50")},
                "note": "pt FP32, crowd/ignore removed from GT in both pipelines (YOLO labels cannot hold them)"}
         self.val_check_result = out
@@ -416,10 +427,11 @@ class Step2:
             add("INT8 - FP16", d, -s["int8_max_drop_pts"] <= d <= s["int8_max_gain_pts"],
                 f"-{s['int8_max_drop_pts']} <= diff <= +{s['int8_max_gain_pts']} pts (slightly lower)")
         vc = getattr(self, "val_check_result", None)
-        if vc:
-            d = vc["abs_diff_pts"]["map50_95"]
-            add("pipeline vs model.val() |diff| mAP50-95", d, d <= s["val_check_max_abs_pts"],
-                f"<= {s['val_check_max_abs_pts']} pts")
+        if vc:  # both metrics required (decision 2026-11-20 after the mAP50 gap in notebook 02)
+            for k, label in (("map50_95", "mAP50-95"), ("map50", "mAP50")):
+                d = vc["abs_diff_pts"][k]
+                add(f"pipeline vs model.val() |diff| {label}", d, d <= s["val_check_max_abs_pts"],
+                    f"<= {s['val_check_max_abs_pts']} pts")
         out = {"checks": checks, "all_pass": all(c["pass"] for c in checks), "map50_95_pts": g,
                "map50_pts": {k: v["all"]["map50"] * 100 for k, v in metrics.items() if not k.startswith("oracle")}}
         w = ExperimentWriter(self.results_root, self._meta(f"sanity_02_{self.model_name}", "sanity", dataset="sanity"))
