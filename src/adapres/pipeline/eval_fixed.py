@@ -408,9 +408,9 @@ class Step2:
         g = {k: v["all"]["map50_95"] * 100 for k, v in metrics.items() if not k.startswith("oracle")}
         checks = []
 
-        def add(name, value, ok, rule):
+        def add(name, value, ok, rule, binding=True):
             checks.append({"check": name, "value_pts": None if value is None else round(value, 3), "rule": rule,
-                           "pass": bool(ok)})
+                           "pass": bool(ok), "binding": binding})
 
         for k, v in g.items():
             add(f"{k} mAP50-95 valid", v, v >= 0, ">= 0 (not -1: GT categories present)")
@@ -427,12 +427,13 @@ class Step2:
             add("INT8 - FP16", d, -s["int8_max_drop_pts"] <= d <= s["int8_max_gain_pts"],
                 f"-{s['int8_max_drop_pts']} <= diff <= +{s['int8_max_gain_pts']} pts (slightly lower)")
         vc = getattr(self, "val_check_result", None)
-        if vc:  # both metrics required (decision 2026-11-20 after the mAP50 gap in notebook 02)
+        if vc:  # end-to-end, both metrics; informational under option 1 (D7): binding check is notebook 02b
             for k, label in (("map50_95", "mAP50-95"), ("map50", "mAP50")):
                 d = vc["abs_diff_pts"][k]
-                add(f"pipeline vs model.val() |diff| {label}", d, d <= s["val_check_max_abs_pts"],
-                    f"<= {s['val_check_max_abs_pts']} pts")
-        out = {"checks": checks, "all_pass": all(c["pass"] for c in checks), "map50_95_pts": g,
+                add(f"pipeline vs model.val() |diff| {label} (end-to-end)", d, d <= s["val_check_max_abs_pts"],
+                    f"<= {s['val_check_max_abs_pts']} pts; informational (D7: predict single-label vs val "
+                    "multi-label NMS); binding check = notebook 02b", binding=False)
+        out = {"checks": checks, "all_pass": all(c["pass"] for c in checks if c["binding"]), "map50_95_pts": g,
                "map50_pts": {k: v["all"]["map50"] * 100 for k, v in metrics.items() if not k.startswith("oracle")}}
         w = ExperimentWriter(self.results_root, self._meta(f"sanity_02_{self.model_name}", "sanity", dataset="sanity"))
         w.write_json("sanity.json", out)

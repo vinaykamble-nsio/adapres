@@ -93,7 +93,16 @@ step2:                         # notebook 02: fixed FP32/FP16/INT8 on calib clip
     trt_fp32_vs_pt_max_abs_pts: 0.5  # TensorRT FP32 vs PyTorch FP32
     int8_max_drop_pts: 3.0           # INT8 "slightly lower": drop vs FP16 must be <= this
     int8_max_gain_pts: 0.5           # INT8 better than FP16 by more than this is suspicious
-    val_check_max_abs_pts: 0.5       # our pycocotools pipeline vs Ultralytics model.val()
+    val_check_max_abs_pts: 0.5       # tolerance for the model.val() comparisons (pts)
+    # Option 1 (decision 2026-11-20, README D7): all policies use single-label predict().
+    # Binding agreement = notebook 02b: |C-B| <= tol on BOTH metrics (identical predictions,
+    # our evaluator vs Ultralytics' metric) AND the predict-vs-val gap explained by NMS mode.
+    # End-to-end |C-A| is reported but not binding. Thresholds set after seeing the 02b smoke
+    # run (ours 0.0005, theirs 0.405, matched 1.0/0.983); recorded as such in D7.
+    val_diag:
+      ours_dup_other_class_max: 0.01   # single-label NMS: (almost) no same-box-other-class duplicates
+      theirs_dup_other_class_min: 0.10 # multi-label NMS signature in model.val() predictions
+      high_conf_match_min: 0.95        # conf >= 0.25 boxes agree (both directions, IoU >= 0.9)
 
 env:
   cuda_visible_devices: "0"

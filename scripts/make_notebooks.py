@@ -496,12 +496,13 @@ print(f"val check: {time.time()-t:.0f}s")
 NB02_SANITY = '''# ===================== CELL 9: SANITY CHECKS =====================
 SAN = step.sanity(METRICS)
 for c in SAN["checks"]:
-    print(f"[{'PASS' if c['pass'] else 'FAIL'}] {c['check']:45s} value={c['value_pts']} pts  rule: {c['rule']}")
+    tag = ("PASS" if c["pass"] else "FAIL") if c.get("binding", True) else ("info" if c["pass"] else "INFO-FAIL")
+    print(f"[{tag}] {c['check']:58s} value={c['value_pts']} pts  rule: {c['rule']}")
 print("ALL SANITY CHECKS PASS" if SAN["all_pass"] else "\\n*** SANITY FAILURES ABOVE: results are saved; do not proceed to Step 3 until reviewed ***")
 '''
 
 NB02_AFTER_ZIP = '''if not SAN["all_pass"]:
-    raise RuntimeError("sanity check(s) failed (zip written): " + str([c["check"] for c in SAN["checks"] if not c["pass"]]))
+    raise RuntimeError("sanity check(s) failed (zip written): " + str([c["check"] for c in SAN["checks"] if not c["pass"] and c.get("binding", True)]))
 '''
 
 
@@ -615,7 +616,13 @@ if "reproduces_notebook02" in DIAG:
 print("\\nchecks (|diff| <= %.2f pts):" % DIAG["tolerance_pts"])
 for name, ch in DIAG["checks"].items():
     print(f"  {name:22s} " + "  ".join(f"{k}: {'PASS' if v else 'FAIL'}" for k, v in ch.items()))
-print(f"\\nBINDING CHECK: {DIAG['binding_check']} -> {'PASS' if DIAG['binding_pass'] else 'FAIL'}")
+e = DIAG["nms_explanation"]
+print("\\nNMS-mode explanation (D7):", {k: ("PASS" if v else "FAIL") for k, v in e["parts"].items()}, e["values"])
+print(f"\\nBINDING CHECK: {DIAG['binding_check']}")
+print(f"  identical predictions (both metrics): {'PASS' if DIAG['identical_predictions_pass'] else 'FAIL'}"
+      f" | NMS mode explains prediction gap: {'PASS' if DIAG['nms_explained'] else 'FAIL'}"
+      f" -> {'PASS' if DIAG['binding_pass'] else 'FAIL'}")
+print("(end_to_end and prediction_agreement rows above are informational under option 1 / D7)")
 '''
 
 NB02B_AFTER_ZIP = '''if not DIAG["binding_pass"]:

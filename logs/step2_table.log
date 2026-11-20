@@ -10,3 +10,6 @@ $ python scripts/make_step2_table.py (2026-11-20T13:18:26Z)
 Calib split only (20 clips, 3950 frames; easy 1486, crowded 417, night 924). mAP in points (pycocotools, maxDets 300). Engine latency: Ultralytics inference time on one pre-decoded frame, T4, median/p95 of 300 runs (microbench, not the Step 4 protocol). Oracle uses GT and is not deployable. Generated from results/ at commit 18f62138.
 
 sanity all_pass: True
+
+sanity all_pass (binding checks of notebook 02): True
+model.val() agreement (notebook 02b, binding, D7): PENDING (no full 02b run in results/)

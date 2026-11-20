@@ -72,6 +72,9 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "step2.sanity.int8_max_drop_pts": (int, float),
     "step2.sanity.int8_max_gain_pts": (int, float),
     "step2.sanity.val_check_max_abs_pts": (int, float),
+    "step2.sanity.val_diag.ours_dup_other_class_max": (int, float),
+    "step2.sanity.val_diag.theirs_dup_other_class_min": (int, float),
+    "step2.sanity.val_diag.high_conf_match_min": (int, float),
 }
 
 VALID_LEVELS = ("fp32", "fp16", "int8")

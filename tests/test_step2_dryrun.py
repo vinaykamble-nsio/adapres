@@ -154,8 +154,12 @@ def test_cache_resume_skips_done_sequences(tmp_path, repo):
 def test_val_check_mismatch_flagged(tmp_path, repo):
     step = _step(tmp_path, repo, smoke=True, val_fn=lambda y: {"map50_95": 0.9, "map50": 0.95})
     *_, san, _ = _run_all(step, tmp_path)
-    bad = {c["check"] for c in san["checks"] if not c["pass"]}
-    assert "pipeline vs model.val() |diff| mAP50-95" in bad
+    by = {c["check"]: c for c in san["checks"]}
+    for label in ("mAP50-95", "mAP50"):  # both metrics are checked and reported ...
+        c = by[f"pipeline vs model.val() |diff| {label} (end-to-end)"]
+        assert c["pass"] is False and c["binding"] is False  # ... but informational under option 1 (D7)
+    binding_fail = {c["check"] for c in san["checks"] if c["binding"] and not c["pass"]}
+    assert binding_fail == {"INT8 - FP16"}  # the only binding failure is the planted INT8 drop
 
 
 def test_refuses_smoke_selection(tmp_path, repo):

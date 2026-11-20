@@ -105,6 +105,24 @@ because Pascal has no fast INT8. Internet must be **On**.
   labels cannot hold them. Required agreement: ≤ 0.5 pts mAP@0.5:0.95. Result in
   `results/sanity/sanity_02_<model>/val_check.json`.
 
+- **D7: evaluation uses single-label `predict()`, not `model.val()`'s multi-label NMS
+  (decided 2026-11-20).** Notebook 02b splits the pipeline-vs-`model.val()` gap on the same calib
+  frames. Its 50-frame smoke run found:
+  - The **metric part is −0.11 / −0.07 pts** (mAP50-95 / mAP50). Our pycocotools evaluator
+    agrees with Ultralytics' metric on identical predictions.
+  - The **prediction part is +0.83 / +1.58 pts**. Ultralytics' validator emits 244 vs 171 boxes
+    per image; 40.5% of its boxes re-emit an existing box under another class (ours 0.05%); 14% of
+    its images hit max_det = 300 (ours 0%). At conf ≥ 0.25 the two prediction sets match
+    (100% / 98.3% at IoU ≥ 0.9).
+
+  All policies are evaluated on single-label `predict()` outputs, which is what a deployed
+  detector emits. The **binding agreement check** is: identical-prediction agreement
+  |C − B| ≤ 0.5 pts on **both** metrics, **and** the gap explained by NMS mode (thresholds in
+  `step2.sanity.val_diag`). Those thresholds were set **after** seeing the smoke-run values. The
+  end-to-end gap is reported but not binding. Our absolute mAP is therefore lower than a
+  `model.val()` number on the same data (by +0.83 / +1.58 pts in the smoke run). The full 200-frame
+  values are in `results/sanity/val_diag_02b_<model>/diag.json`.
+
 ## Licences
 
 Code: AGPL-3.0 (we import Ultralytics; PLAN §10). Add the official AGPL-3.0 text as `LICENSE`

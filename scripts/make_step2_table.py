@@ -69,7 +69,15 @@ def build(results: Path) -> tuple[list[dict], dict]:
         r["engine_MB"] = eng[backend]["bytes"] / 1e6 if backend in eng else None
         rows.append(r)
     meta = {"git_commit": commits.pop(), "n_frames": n_frames, "sanity_all_pass": san["all_pass"],
-            "sanity": san["checks"]}
+            "sanity": san["checks"], "val_diag_binding_pass": None}
+    # D7: the binding model.val() agreement check lives in notebook 02b (may come from a later commit)
+    vd = idx.get("val_diag_02b_yolo11s")
+    if vd:
+        if vd["smoke"] == "True":
+            raise TableError("val_diag_02b_yolo11s in index.csv is a SMOKE run")
+        d = json.loads((results / vd["path"] / "diag.json").read_text())
+        meta["val_diag_binding_pass"] = d["binding_pass"]
+        meta["val_diag_commit"] = vd["git_commit"]
     return rows, meta
 
 
@@ -117,7 +125,10 @@ def main() -> int:
     rows, meta = build(Path(a.results))
     write(rows, meta, Path(a.out))
     print((Path(a.out) / "step2_calib_fixed.md").read_text(encoding="utf-8"))
-    print("sanity all_pass:", meta["sanity_all_pass"])
+    print("sanity all_pass (binding checks of notebook 02):", meta["sanity_all_pass"])
+    vd = meta["val_diag_binding_pass"]
+    print("model.val() agreement (notebook 02b, binding, D7):",
+          "PENDING (no full 02b run in results/)" if vd is None else ("PASS" if vd else "FAIL"))
     return 0
 
 

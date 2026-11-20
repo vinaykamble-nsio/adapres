@@ -8,11 +8,16 @@ Three numbers on identical frames and identical GT (crowd/ignore boxes removed):
   C = their predictions                     scored by Ultralytics' own metric (model.val)
   prediction component = B - A   (same metric, different predictions)
   metric component     = C - B   (same predictions, different metric)
-Decision rule (fixed before the run): per metric, the cause is the component with the
-larger |value|. Binding agreement check (user decision 2026-11-20):
-  - default: end-to-end |C - A| <= tol on BOTH mAP50-95 and mAP50;
-  - if every end-to-end failure is caused by the metric component, the tolerance is applied
-    instead to the identical-predictions comparison |C - B| on BOTH metrics.
+Cause (per metric): the component with the larger |value|.
+
+Binding agreement check (option 1, user decision 2026-11-20, README D7). All policies are
+evaluated on single-label YOLO.predict() outputs, which is what a deployed detector emits.
+The check passes iff
+  (1) identical predictions: |C - B| <= tol on BOTH mAP50-95 and mAP50 (our evaluator is right), and
+  (2) the predict-vs-val prediction gap is explained by NMS mode: our same-box-other-class
+      duplicate fraction <= ours_max, theirs >= theirs_min (multi-label NMS signature), and the
+      conf >= 0.25 boxes agree in both directions (matched fraction >= high_conf_match_min).
+End-to-end |C - A| and |B - A| are reported, not binding.
 """
 
 from __future__ import annotations
@@ -124,13 +129,29 @@ def decompose(a: dict, b: dict, c: dict, tol_pts: float) -> dict:
         "prediction_agreement": {k: abs(comp[k]["prediction_component_pts"]) <= tol_pts for k in METRICS},
     }
     failing = [k for k in METRICS if not checks["end_to_end"][k]]
-    if failing and all(comp[k]["cause"] == "metric_implementation" for k in failing):
-        binding = "identical_predictions"
-    else:
-        binding = "end_to_end"
-    verdict = all(checks[binding].values())
-    return {"tolerance_pts": tol_pts, "components": comp, "checks": checks, "binding_check": binding,
-            "binding_pass": verdict, "end_to_end_failing_metrics": failing}
+    return {"tolerance_pts": tol_pts, "components": comp, "checks": checks, "end_to_end_failing_metrics": failing}
+
+
+def nms_explanation(similarity: dict, signature: dict, thr: dict) -> dict:
+    """Is the predict-vs-val gap explained by single- vs multi-label NMS? (D7)"""
+    o = signature["ours"]["frac_boxes_with_same_box_other_class"]
+    t = signature["theirs"]["frac_boxes_with_same_box_other_class"]
+    mo, mt = similarity["frac_ours_matched"], similarity["frac_theirs_matched"]
+    parts = {
+        "ours_single_label": o is not None and o <= thr["ours_dup_other_class_max"],
+        "theirs_multi_label": t is not None and t >= thr["theirs_dup_other_class_min"],
+        "high_conf_boxes_agree": (mo is not None and mt is not None and mo >= thr["high_conf_match_min"]
+                                  and mt >= thr["high_conf_match_min"]),
+    }
+    return {"parts": parts, "values": {"ours_dup": o, "theirs_dup": t, "ours_matched": mo, "theirs_matched": mt},
+            "thresholds": thr, "explained": all(parts.values())}
+
+
+def binding_verdict(dec: dict, expl: dict) -> dict:
+    ident = all(dec["checks"]["identical_predictions"].values())
+    return {"binding_check": "identical_predictions(both metrics) AND nms_mode_explains_prediction_gap",
+            "identical_predictions_pass": ident, "nms_explained": expl["explained"],
+            "binding_pass": bool(ident and expl["explained"])}
 
 
 def run(step, predict_fn: Callable, val_fn: Callable, tol_pts: float, committed_val_check: dict | None) -> dict:
@@ -150,6 +171,9 @@ def run(step, predict_fn: Callable, val_fn: Callable, tol_pts: float, committed_
     out["prediction_similarity"] = compare_predictions(ours, theirs)
     md = step.cfg["model"]["max_det"]
     out["multilabel_signature"] = {"ours": multilabel_signature(ours, md), "theirs": multilabel_signature(theirs, md)}
+    out["nms_explanation"] = nms_explanation(out["prediction_similarity"], out["multilabel_signature"],
+                                             step.cfg["step2"]["sanity"]["val_diag"])
+    out.update(binding_verdict(out, out["nms_explanation"]))
     out["n_frames"] = len(vs["ids"])
     out["image_ids"] = vs["ids"]
     out["ultralytics_val_args"] = v.get("args")
