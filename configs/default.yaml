@@ -60,11 +60,40 @@ classmap:
 
 model:
   name: yolo11s
+  weights: yolo11s.pt         # downloaded by Ultralytics on Kaggle (internet on); SHA-256 recorded
   imgsz: 640
   conf: 0.001
   iou: 0.7
   max_det: 300
   conf_cue: 0.25              # tau_c
+  rect: false                 # square 640x640 letterbox for every backend (static engines need it)
+  # PLAN §1.2 pre-registered rule: if INT8 median engine latency is < 10% below FP16,
+  # also run yolo11m and use whichever has the larger FP16->INT8 gap.
+  size_rule_min_int8_speedup: 0.10
+
+eval:
+  max_dets: 300               # pycocotools maxDets[-1]; AP read via eval/coco_metrics.py (D4)
+  perframe_iou: 0.5           # per-frame F1@0.5 (oracle proxy, PLAN §6)
+  ignore_ioa: 0.5             # detection on an ignore box if intersection/det-area >= this
+
+step2:                         # notebook 02: fixed FP32/FP16/INT8 on calib clips only
+  split: calib
+  levels: [fp32, fp16, int8]
+  pt_reference: true          # also run the PyTorch .pt FP32 model as a sanity reference
+  n_sequences: 20             # all calib clips
+  smoke_n_sequences: 2
+  warmup_frames: 50           # discarded per engine before timing (PLAN §2.3)
+  microbench_iters: 300
+  microbench_warmup: 50
+  val_check_frames: 200       # PLAN §5.3 pipeline vs model.val() check (D6: BDD calib frames)
+  smoke_val_check_frames: 50
+  int8_batch: 1
+  sanity:
+    fp16_vs_fp32_max_abs_pts: 0.5    # |mAP50-95(FP16) - mAP50-95(FP32)| in points
+    trt_fp32_vs_pt_max_abs_pts: 0.5  # TensorRT FP32 vs PyTorch FP32
+    int8_max_drop_pts: 3.0           # INT8 "slightly lower": drop vs FP16 must be <= this
+    int8_max_gain_pts: 0.5           # INT8 better than FP16 by more than this is suspicious
+    val_check_max_abs_pts: 0.5       # our pycocotools pipeline vs Ultralytics model.val()
 
 env:
   cuda_visible_devices: "0"

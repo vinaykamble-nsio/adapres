@@ -46,7 +46,35 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "model.imgsz": int,
     "env.cuda_visible_devices": str,
     "env.require_ort_cuda": bool,
+    "model.weights": str,
+    "model.conf": (int, float),
+    "model.iou": (int, float),
+    "model.max_det": int,
+    "model.conf_cue": (int, float),
+    "model.rect": bool,
+    "model.size_rule_min_int8_speedup": (int, float),
+    "eval.max_dets": int,
+    "eval.perframe_iou": (int, float),
+    "eval.ignore_ioa": (int, float),
+    "step2.split": str,
+    "step2.levels": list,
+    "step2.pt_reference": bool,
+    "step2.n_sequences": int,
+    "step2.smoke_n_sequences": int,
+    "step2.warmup_frames": int,
+    "step2.microbench_iters": int,
+    "step2.microbench_warmup": int,
+    "step2.val_check_frames": int,
+    "step2.smoke_val_check_frames": int,
+    "step2.int8_batch": int,
+    "step2.sanity.fp16_vs_fp32_max_abs_pts": (int, float),
+    "step2.sanity.trt_fp32_vs_pt_max_abs_pts": (int, float),
+    "step2.sanity.int8_max_drop_pts": (int, float),
+    "step2.sanity.int8_max_gain_pts": (int, float),
+    "step2.sanity.val_check_max_abs_pts": (int, float),
 }
+
+VALID_LEVELS = ("fp32", "fp16", "int8")
 
 VALID_STRATA = {"daytime", "night", "dawn_dusk"}
 
@@ -99,6 +127,14 @@ def validate(cfg: dict) -> dict:
             errors.append("splice.min_segments > splice.max_segments")
         if get(cfg, "splice.min_segments") < 2:
             errors.append("splice.min_segments must be >= 2 (a splice needs two segments)")
+    except ConfigError:
+        pass
+    try:
+        lv = get(cfg, "step2.levels")
+        if isinstance(lv, list) and (not lv or any(x not in VALID_LEVELS for x in lv)):
+            errors.append(f"step2.levels must be a non-empty subset of {VALID_LEVELS}, got {lv}")
+        if get(cfg, "step2.split") != "calib":
+            errors.append("step2.split must be 'calib' (test stays untouched until configs are locked)")
     except ConfigError:
         pass
     try:

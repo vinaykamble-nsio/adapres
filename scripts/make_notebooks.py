@@ -197,7 +197,7 @@ print("torch still", torch.__version__, "cuda", torch.version.cuda)
 '''
 
 
-def zip_cell(nb_name: str) -> str:
+def zip_cell(nb_name: str, after: str = "") -> str:
     return f'''# ===================== FINAL CELL: ZIP RESULTS =====================
 import zipfile
 suffix = "_smoke" if SMOKE_TEST else ""
@@ -213,7 +213,7 @@ with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
                 n += 1
 print(f"wrote {{zpath}} ({{n}} files, {{os.path.getsize(zpath)/1e6:.2f}} MB)")
 print(f"total notebook time: {{(time.time()-T0)/60:.1f}} min")
-'''
+{after}'''
 
 
 # --------------------------------------------------------------------------- notebook 01
@@ -357,7 +357,169 @@ def build_nb01(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
-BUILDERS = {"01_env_and_data.ipynb": build_nb01}
+# --------------------------------------------------------------------------- notebook 02
+
+NB02_README = """# 02 — Fixed FP32 / FP16 / INT8 evaluation on the 20 calib clips
+
+**Purpose.** Build TensorRT FP32, FP16 and INT8 engines for YOLO11s at 640 px. INT8 is
+calibrated on the 500 Step 1 calib frames only. Run each engine, plus the PyTorch FP32
+reference, on the **20 calib clips (~3.95k frames)**, cache every detection, and compute
+pycocotools mAP@0.5 and mAP@0.5:0.95 overall and per slice. Then run the sanity checks:
+- FP16 ≈ FP32.
+- INT8 slightly lower.
+- TensorRT FP32 ≈ PyTorch FP32.
+- Our pipeline ≈ Ultralytics `model.val()` (PLAN §5.3).
+- The microbenchmark and the pre-registered model-size rule.
+
+**The test split is not touched.** Calib/test clip lists and slice labels come from the
+committed `results/bdd100k_mot/bdd_subsets/`. The calib ground truth is rebuilt from the labels
+and must match Step 1's counts exactly, or the notebook stops.
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`** (same as notebook 01). No other inputs; the YOLO11s
+   weights are downloaded by Ultralytics (Internet On) and their SHA-256 is recorded.
+2. *Settings* → **Accelerator: GPU T4 x2** (one GPU pinned), **Internet: On**.
+3. *Add-ons → Secrets* → **`GH_TOKEN`** attached.
+4. First run with `SMOKE_TEST = True` (2 clips, 50 INT8 calibration frames; ≈15 min, mostly
+   engine builds). Then `SMOKE_TEST = False` → *Save Version → Save & Run All* (≈25–30 min).
+   If the model-size rule triggers (cell 5 says so), set
+   `CONFIG["model_override"] = {"name": "yolo11m", "weights": "yolo11m.pt"}` and run again.
+
+**Download afterwards:** `results_02_eval_fp32_fp16_int8.zip` → unzip into the repo root
+(`results/bdd100k_mot/calib_*`, `results/microbench/`, `results/sanity/`, `logs/`).
+**Keep this notebook version**: its output `work02/cache/` (per-frame detections) is the input
+of notebook 03 (*Add Data → Notebook Output*). The final cell raises if any sanity check failed,
+after the zip is written, so the failure is visible and nothing is lost.
+"""
+
+NB02_EXTRA_CONFIG = '''    "model_override": None,   # e.g. {"name": "yolo11m", "weights": "yolo11m.pt"} if the size rule triggers
+'''
+
+NB02_PREPARE = '''# ===================== CELL 3: PREPARE (manifest, GT rebuild, weights) =====================
+import logging
+os.environ["YOLO_AUTOINSTALL"] = "False"   # never let Ultralytics pip-install unpinned packages
+if CONFIG["model_override"]:
+    cfg = C.load(os.path.join(REPO, CONFIG["config_path"]), {**CONFIG["overrides"], "model": CONFIG["model_override"]})
+logging.basicConfig(level=logging.INFO, force=True, format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+                    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(os.path.join(LOGS, "02_eval.log"))])
+from adapres.pipeline.eval_fixed import Step2
+WORK = os.path.join(cfg["paths"]["work_root"], "smoke" if SMOKE_TEST else "", "work02")
+os.makedirs(WORK, exist_ok=True)
+os.chdir(WORK)                              # Ultralytics downloads weights into the cwd
+from ultralytics import YOLO
+import ultralytics
+print("ultralytics", ultralytics.__version__)
+_m = YOLO(cfg["model"]["weights"])
+WEIGHTS = os.path.abspath(cfg["model"]["weights"])
+if not os.path.exists(WEIGHTS):
+    raise RuntimeError(f"weights not found after download: {WEIGHTS}")
+NAMES = dict(_m.names)
+del _m
+step = Step2(cfg, SMOKE_TEST, REPO)
+step.coco_names = NAMES
+t = time.time()
+info = step.prepare()
+print(json.dumps(info, indent=2)[:2000])
+print(f"prepare: {time.time()-t:.0f}s | model {cfg['model']['name']} weights {WEIGHTS}")
+'''
+
+NB02_EXPORT = '''# ===================== CELL 4: EXPORT TensorRT ENGINES (rebuilt in this session) =====================
+t = time.time()
+int8_yaml = step.int8_dataset(NAMES)
+print("INT8 calibration frames (calib split only):", step.n_int8_frames)
+eng = step.export(WEIGHTS, int8_yaml)
+for lv, e in eng.items():
+    md = e.get("ultralytics_metadata", {})
+    print(f"{lv:5s} {e['bytes']/1e6:7.1f} MB build {e['build_s']:6.1f}s sha {e['sha256'][:12]} "
+          f"| meta: half={md.get('half')} int8={md.get('int8')} dynamic={md.get('dynamic')} batch={md.get('batch')} "
+          f"imgsz={md.get('imgsz')} {md.get('_error', '')}")
+print(f"export: {(time.time()-t)/60:.1f} min")
+'''
+
+NB02_MICRO = '''# ===================== CELL 5: MICROBENCH + MODEL-SIZE RULE (PLAN §1.2) =====================
+t = time.time()
+BACKENDS = step.backends()
+mb = step.microbench(BACKENDS)
+for name, r in mb["per_backend"].items():
+    print(f"{name:8s} infer median {r['infer_ms']['median']:6.2f} ms  p95 {r['infer_ms']['p95']:6.2f}  "
+          f"| wall median {r['wall_ms']['median']:6.2f} ms")
+rule = mb.get("size_rule")
+print("size rule:", rule)
+if rule and rule["triggered"]:
+    print("\\n" + "!" * 80 + "\\nMODEL-SIZE RULE TRIGGERED: INT8 is less than "
+          f"{100*rule['threshold']:.0f}% faster than FP16. Per PLAN §1.2, ALSO run this notebook with\\n"
+          'CONFIG["model_override"] = {"name": "yolo11m", "weights": "yolo11m.pt"}\\n' + "!" * 80)
+print(f"microbench: {time.time()-t:.0f}s")
+'''
+
+NB02_CACHE = '''# ===================== CELL 6: CACHE RUNS (all backends x all calib frames; resumable) =====================
+t = time.time()
+done = step.cache_runs(BACKENDS)
+print("cached sequences per backend:", done, f"| {(time.time()-t)/60:.1f} min")
+'''
+
+NB02_EVAL = '''# ===================== CELL 7: EVALUATE (pycocotools, per slice) + dev oracle =====================
+import pandas as pd
+t = time.time()
+METRICS = step.evaluate()
+rows = []
+for name, m in METRICS.items():
+    r = {"policy": name, "mAP50-95": 100*m["all"]["map50_95"], "mAP50": 100*m["all"]["map50"],
+         "meanF1@.5": m["all"]["mean_f1_05"]}
+    for s in ("easy", "crowded", "night", "scene_change_natural"):
+        r[f"{s} mAP50-95"] = 100*m[s]["map50_95"] if m[s]["n_images"] else None
+    tc = m["all"].get("timing_cache")
+    if tc:
+        r["infer ms (med)"] = tc["infer_ms"]["median"]; r["wall ms (med)"] = tc["wall_ms"]["median"]
+    rows.append(r)
+pd.set_option("display.width", 250)
+print(pd.DataFrame(rows).round(2).to_string(index=False))
+print("slice sizes:", {k: v["n_images"] for k, v in METRICS["fp16"].items()})
+print("NOTE: timings are single-pass cache timings (JPEG decode included), not the Step 4 latency protocol.")
+print(f"evaluate: {time.time()-t:.0f}s")
+'''
+
+NB02_VAL = '''# ===================== CELL 8: PIPELINE vs ULTRALYTICS model.val() (PLAN §5.3) =====================
+t = time.time()
+vc = step.val_check()
+print(json.dumps(vc, indent=2))
+print(f"val check: {time.time()-t:.0f}s")
+'''
+
+NB02_SANITY = '''# ===================== CELL 9: SANITY CHECKS =====================
+SAN = step.sanity(METRICS)
+for c in SAN["checks"]:
+    print(f"[{'PASS' if c['pass'] else 'FAIL'}] {c['check']:45s} value={c['value_pts']} pts  rule: {c['rule']}")
+print("ALL SANITY CHECKS PASS" if SAN["all_pass"] else "\\n*** SANITY FAILURES ABOVE: results are saved; do not proceed to Step 3 until reviewed ***")
+'''
+
+NB02_AFTER_ZIP = '''if not SAN["all_pass"]:
+    raise RuntimeError("sanity check(s) failed (zip written): " + str([c["check"] for c in SAN["checks"] if not c["pass"]]))
+'''
+
+
+def build_nb02(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    nb.cells = [
+        nbf.v4.new_markdown_cell(NB02_README),
+        nbf.v4.new_code_cell(config_and_env_cell("02_eval_fp32_fp16_int8", NB02_EXTRA_CONFIG, rev=rev)),
+        nbf.v4.new_code_cell(PIP_CELL),
+        nbf.v4.new_code_cell(NB02_PREPARE),
+        nbf.v4.new_code_cell(NB02_EXPORT),
+        nbf.v4.new_code_cell(NB02_MICRO),
+        nbf.v4.new_code_cell(NB02_CACHE),
+        nbf.v4.new_code_cell(NB02_EVAL),
+        nbf.v4.new_code_cell(NB02_VAL),
+        nbf.v4.new_code_cell(NB02_SANITY),
+        nbf.v4.new_code_cell(zip_cell("02_eval_fp32_fp16_int8", NB02_AFTER_ZIP)),
+    ]
+    return nb
+
+
+BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02}
 
 
 def notebook_rev(name: str) -> str:

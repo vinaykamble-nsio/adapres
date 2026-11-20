@@ -99,6 +99,12 @@ because Pascal has no fast INT8. Internet must be **On**.
   fails, that is recorded and shown as a warning, not a stop (`env.require_ort_cuda`). Exact
   versions are locked in `requirements-kaggle.txt` after the first successful run.
 
+- **D6 (PLAN §5.3): the pipeline-vs-`model.val()` check uses 200 BDD calib frames, not a COCO
+  mini-set.** PyTorch FP32 YOLO11s, same settings (conf 0.001, IoU 0.7, max_det 300, 640 px
+  square letterbox). Crowd and ignore boxes are removed from both pipelines' GT, because YOLO
+  labels cannot hold them. Required agreement: ≤ 0.5 pts mAP@0.5:0.95. Result in
+  `results/sanity/sanity_02_<model>/val_check.json`.
+
 ## Licences
 
 Code: AGPL-3.0 (we import Ultralytics; PLAN §10). Add the official AGPL-3.0 text as `LICENSE`

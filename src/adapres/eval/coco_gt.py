@@ -10,8 +10,10 @@ from ..data.classmap import EVAL_CATEGORIES, coco_categories
 
 
 def build_coco_gt(items: Iterable[tuple[int, Frame, int, int]], ignore_mode: str = "all_eval_classes",
-                  description: str = "") -> dict:
-    """items: (image_id, frame, width, height). Returns a COCO dict."""
+                  description: str = "", drop_crowd: bool = False) -> dict:
+    """items: (image_id, frame, width, height). Returns a COCO dict.
+    drop_crowd=True removes crowd boxes entirely (used only for the model.val() comparison,
+    because YOLO-format labels cannot express ignore regions)."""
     if ignore_mode not in ("all_eval_classes", "none"):
         raise ValueError(f"bad ignore_mode {ignore_mode!r}")
     images, anns = [], []
@@ -32,6 +34,8 @@ def build_coco_gt(items: Iterable[tuple[int, Frame, int, int]], ignore_mode: str
                 continue
             base = {"image_id": int(image_id), "bbox": [x1, y1, bw, bh], "area": bw * bh,
                     "track_id": b.track_id, "bdd_category": b.category}
+            if b.kind == "eval" and b.crowd and drop_crowd:
+                continue
             if b.kind == "eval":
                 anns.append({**base, "id": ann_id, "category_id": b.eval_id, "iscrowd": int(b.crowd)})
                 ann_id += 1
