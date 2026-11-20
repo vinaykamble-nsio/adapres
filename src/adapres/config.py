@@ -75,6 +75,27 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "step2.sanity.val_diag.ours_dup_other_class_max": (int, float),
     "step2.sanity.val_diag.theirs_dup_other_class_min": (int, float),
     "step2.sanity.val_diag.high_conf_match_min": (int, float),
+    "features.width": int,
+    "features.canny_low": int,
+    "features.canny_high": int,
+    "features.hist_bins": int,
+    "controller.levels": list,
+    "controller.start_level": str,
+    "controller.weights": dict,
+    "controller.alpha": (int, float),
+    "controller.theta_quantile": (int, float),
+    "controller.K": int,
+    "controller.H": int,
+    "controller.theta_sc": (int, float),
+    "controller.u_empty": (int, float),
+    "controller.scene_override": bool,
+    "controller.w_h": (int, float),
+    "controller.norm_percentiles": list,
+    "step3.split": str,
+    "step3.smoke_n_sequences": int,
+    "step3.K_sweep": list,
+    "step3.random_seeds": int,
+    "step3.iid_p_int8": (int, float),
 }
 
 VALID_LEVELS = ("fp32", "fp16", "int8")
@@ -139,6 +160,25 @@ def validate(cfg: dict) -> dict:
         if get(cfg, "step2.split") != "calib":
             errors.append("step2.split must be 'calib' (test stays untouched until configs are locked)")
     except ConfigError:
+        pass
+    try:
+        if get(cfg, "step3.split") != "calib":
+            errors.append("step3.split must be 'calib' (test stays untouched until configs are locked)")
+        c = get(cfg, "controller")
+        w = c["weights"]
+        if set(w) != {"m", "c", "n", "u", "s"} or any(v < 0 for v in w.values()) or abs(sum(w.values()) - 1) > 1e-9:
+            errors.append(f"controller.weights must be non-negative over m,c,n,u,s and sum to 1, got {w}")
+        if not 0 < c["alpha"] <= 1:
+            errors.append("controller.alpha must be in (0, 1]")
+        if c["start_level"] not in c["levels"] or any(x not in VALID_LEVELS for x in c["levels"]):
+            errors.append("controller.levels/start_level invalid")
+        for k in ("K", "K_up", "K_down"):
+            v = c.get(k)
+            if v is not None and (not isinstance(v, int) or v < 1):
+                errors.append(f"controller.{k} must be an int >= 1 or null")
+        if not 0 <= c["theta_quantile"] <= 1:
+            errors.append("controller.theta_quantile must be in [0, 1]")
+    except (ConfigError, KeyError, TypeError):
         pass
     try:
         if get(cfg, "classmap.ignore_mode") not in ("all_eval_classes", "none"):

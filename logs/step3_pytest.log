@@ -1,0 +1,8 @@
+$ pytest -q (2026-11-20T14:33:06Z)
+E           AssertionError: README cell missing 'Accelerator'
+E           assert 'Accelerator' in "# 03 — Complexity cues, controller with hysteresis, random and oracle baselines (calib)\n\n**Purpose.** Compute the p...dev/`, `calib_features_yolo11s/`, `results/sanity/sanity_03_yolo11s/`,\n`logs/`). Don't download the working folder.\n"
+FAILED tests/test_notebooks.py::test_notebook_structure[03_controller_dev.ipynb]
+1 failed, 182 passed in 29.19s
+$ pytest -q (2026-11-20T14:34:05Z)
+183 passed in 26.27s
+183 passed in 26.05s

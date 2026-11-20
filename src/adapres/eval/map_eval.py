@@ -90,3 +90,87 @@ class CocoEvaluator:
 
     def evaluate_slices(self, results: list[dict], slices: Mapping[str, Iterable[int]]) -> dict:
         return {name: self.evaluate(results, ids) for name, ids in slices.items()}
+
+    def matched(self, results: list[dict]):
+        """COCOeval after evaluate() (per-image matching) on all images, before accumulate()."""
+        from pycocotools.coco import COCO
+        from pycocotools.cocoeval import COCOeval
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            if results:
+                dt = self.gt.loadRes(results)
+            else:
+                dt = COCO()
+                dt.dataset = {"images": self.gt.dataset["images"], "categories": self.gt.dataset["categories"],
+                              "annotations": []}
+                dt.createIndex()
+            ev = COCOeval(self.gt, dt, iouType="bbox")
+            ev.params.imgIds = list(self.all_img_ids)
+            ev.params.maxDets = [1, 10, self.max_dets]
+            ev.evaluate()
+        return ev
+
+
+def _accumulate_masked(ev, eval_imgs: list, keep: set[int] | None) -> dict:
+    """accumulate() over a subset of images by masking other images' per-image results to None
+    (COCOeval.accumulate skips None). Equivalent to evaluating the subset on its own, because
+    matching in COCOeval is per image and the image order is unchanged."""
+    saved = ev.evalImgs
+    ev.evalImgs = eval_imgs if keep is None else [e if (e is not None and e["image_id"] in keep) else None
+                                                  for e in eval_imgs]
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            ev.accumulate()
+        out = {"map50_95": ap_from_eval(ev), "map50": ap_from_eval(ev, iou=0.5), "per_class_ap50_95": {},
+               "per_class_ap50": {}}
+        for cid, (name, _) in EVAL_CATEGORIES.items():
+            out["per_class_ap50_95"][name] = ap_from_eval(ev, cat_ids=[cid])
+            out["per_class_ap50"][name] = ap_from_eval(ev, iou=0.5, cat_ids=[cid])
+        return out
+    finally:
+        ev.evalImgs = saved
+
+
+class ComposedEvaluator:
+    """mAP of any per-frame selection among precomputed levels without re-matching.
+
+    COCOeval.evaluate() matches detections to GT independently per image, so the per-image
+    results of a policy that takes frame i from level L(i) are exactly level L(i)'s per-image
+    results. evaluate() runs once per level; each policy then only re-runs accumulate()."""
+
+    def __init__(self, gt: dict, dets_by_level: Mapping[str, Mapping[int, np.ndarray]], max_dets: int = 300):
+        self.base = CocoEvaluator(gt, max_dets)
+        self.levels = list(dets_by_level)
+        self.ev = {lv: self.base.matched(dets_to_coco_results(d)) for lv, d in dets_by_level.items()}
+        ref = self.ev[self.levels[0]]
+        self.order = list(ref._paramsEval.imgIds)
+        self.I0 = len(self.order)
+        for lv, ev in self.ev.items():
+            if list(ev._paramsEval.imgIds) != self.order or list(ev._paramsEval.catIds) != list(ref._paramsEval.catIds) \
+                    or len(ev.evalImgs) != len(ref.evalImgs):
+                raise ValueError(f"level {lv} was evaluated with different params")
+        self.n_dets = {lv: sum(len(np.asarray(v).reshape(-1, 6)) for v in d.values()) for lv, d in dets_by_level.items()}
+
+    def compose(self, choice: Mapping[int, str]) -> list:
+        missing = [i for i in self.order if i not in choice]
+        if missing:
+            raise ValueError(f"choice lacks {len(missing)} images, e.g. {missing[:3]}")
+        pos_level = [choice[i] for i in self.order]
+        bad = set(pos_level) - set(self.levels)
+        if bad:
+            raise ValueError(f"unknown levels {bad}")
+        lists = {lv: self.ev[lv].evalImgs for lv in self.levels}
+        return [lists[pos_level[k % self.I0]][k] for k in range(len(lists[self.levels[0]]))]
+
+    def evaluate(self, choice: Mapping[int, str], slices: Mapping[str, Iterable[int]]) -> dict:
+        composed = self.compose(choice)
+        ref = self.ev[self.levels[0]]
+        out = {}
+        for name, ids in slices.items():
+            ids = set(int(i) for i in ids)
+            if not ids:
+                out[name] = {"n_images": 0, "map50_95": -1.0, "map50": -1.0, "per_class_ap50_95": {},
+                             "per_class_ap50": {}}
+                continue
+            out[name] = {"n_images": len(ids), **_accumulate_masked(ref, composed, ids)}
+        return out

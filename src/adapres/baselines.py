@@ -54,6 +54,46 @@ def select_dets(choice: Sequence[int], image_ids: Sequence[int], levels: Sequenc
     return out
 
 
+def estimate_markov(choices_by_seq: Mapping[str, Sequence[int]], n_levels: int) -> dict:
+    """Transition matrix and initial distribution from a policy log (PLAN §6.1). Transitions
+    are counted within sequences only. Rows with no observations fall back to 'stay'."""
+    counts = np.zeros((n_levels, n_levels))
+    init = np.zeros(n_levels)
+    for c in choices_by_seq.values():
+        c = np.asarray(c, int)
+        if len(c) == 0:
+            continue
+        init[c[0]] += 1
+        np.add.at(counts, (c[:-1], c[1:]), 1)
+    P = np.eye(n_levels)
+    rows = counts.sum(1) > 0
+    P[rows] = counts[rows] / counts[rows].sum(1, keepdims=True)
+    return {"P": P, "init": init / max(init.sum(), 1), "counts": counts}
+
+
+def markov_random(seq_lengths: Mapping[str, int], P: np.ndarray, init: np.ndarray, seed: int) -> dict[str, np.ndarray]:
+    """Matched random baseline: a Markov chain with the adaptive policy's transition matrix and
+    initial distribution, so the precision mix and switch rate match in expectation and only
+    the placement of switches differs. Deterministic given seed (sequences in sorted order)."""
+    rng = np.random.default_rng(seed)
+    out = {}
+    for seq in sorted(seq_lengths):
+        n = int(seq_lengths[seq])
+        c = np.empty(n, int)
+        if n:
+            c[0] = rng.choice(len(init), p=init)
+            for t in range(1, n):
+                c[t] = rng.choice(P.shape[1], p=P[c[t - 1]])
+        out[seq] = c
+    return out
+
+
+def iid_random(seq_lengths: Mapping[str, int], p_cheap: float, seed: int) -> dict[str, np.ndarray]:
+    """Naive i.i.d. baseline: each frame is level 0 (cheapest) with probability p_cheap, else level 1."""
+    rng = np.random.default_rng(seed)
+    return {seq: (rng.random(int(seq_lengths[seq])) >= p_cheap).astype(int) for seq in sorted(seq_lengths)}
+
+
 def level_fractions(choice: Sequence[int], levels: Sequence[str]) -> dict[str, float]:
     c = np.asarray(choice)
     return {lv: float(np.mean(c == i)) if len(c) else 0.0 for i, lv in enumerate(levels)}

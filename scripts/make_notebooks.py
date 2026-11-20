@@ -648,8 +648,126 @@ def build_nb02b(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
+# --------------------------------------------------------------------------- notebook 03
+
+NB03_README = """# 03 — Complexity cues, controller with hysteresis, random and oracle baselines (calib)
+
+**Purpose.** Compute the per-frame cues of PLAN §3.1 on the 20 calib clips:
+- image cues: motion, clutter (Canny), HSV histogram distance;
+- detection cues: count and uncertainty, taken from the detections of the level actually chosen
+  at t − 1.
+
+Then replay the INT8/FP16 controller (EMA, threshold, K-frame persistence, scene-change override)
+on **notebook 02's cached detections** and compare it with fixed FP16/INT8, matched-random
+(Markov, 10 seeds), i.i.d.-random (10 seeds) and the oracle.
+
+This is **development on calib only**: the controller uses default parameters, with normalisation
+and θ fit on calib. Calibration and locking come in notebook 04b. **The test split is not touched.**
+
+Built-in integrity checks:
+- The attached cache must reproduce the committed per-frame detection counts exactly.
+- Fixed FP16/INT8 and the oracle, re-scored by the composed evaluator, must equal notebook 02's
+  committed mAP on every slice (to 1e-9).
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`** (images, for the cues).
+2. *Add Data* → *Your Work* → *Notebooks* → **your `02_eval_fp32_fp16_int8` notebook** → add the
+   version from the **full run** (the one whose results you committed). Its `work02/cache/` holds the
+   detections. Attach only one notebook 02 output.
+3. *Settings* → **Accelerator: GPU T4 x2** (convention; this notebook is CPU-bound), **Internet: On**.
+   *Add-ons → Secrets* → tick **`GH_TOKEN`** for this notebook.
+4. `SMOKE_TEST = True` first (2 clips, ≈6 min including installs). Then `SMOKE_TEST = False` →
+   *Save Version → Save & Run All* (20 clips, ≈15–20 min; the estimate is unverified).
+
+**Download afterwards:** `results_03_controller_dev.zip` → unzip into the repo root
+(`results/bdd100k_mot/calib_*_dev/`, `calib_features_yolo11s/`, `results/sanity/sanity_03_yolo11s/`,
+`logs/`). Don't download the working folder.
+"""
+
+NB03_PREPARE = '''# ===================== CELL 3: PREPARE + LOCATE AND VERIFY THE NOTEBOOK 02 CACHE =====================
+import logging
+logging.basicConfig(level=logging.INFO, force=True, format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+                    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler(os.path.join(LOGS, "03_controller.log"))])
+import cv2
+print("opencv", cv2.__version__)
+from adapres.pipeline.controller_dev import Step3
+t = time.time()
+st = Step3(cfg, SMOKE_TEST, REPO)
+info = st.prepare()
+print(json.dumps({k: info[k] for k in ("n_frames", "slice_sizes")}, indent=1), "| sequences:", len(info["sequences"]))
+root = st.locate_cache()
+print("cache:", root)
+vc = st.verify_cache()
+print("cache verification:", vc)
+print(f"prepare: {time.time()-t:.0f}s")
+'''
+
+NB03_FEATURES = '''# ===================== CELL 4: IMAGE CUES (checkpointed per clip) =====================
+t = time.time()
+ft = st.features()
+print(json.dumps(ft, indent=1))
+print(f"features: {(time.time()-t)/60:.1f} min")
+'''
+
+NB03_FIT = '''# ===================== CELL 5: NORMALISATION + DEV THRESHOLD (calib) =====================
+fit = st.fit()
+print("norm (p5, p95):", fit["norm"])
+print("theta (quantile %.2f of open-loop S_hat): %.4f" % (fit["theta_quantile"], fit["theta"]))
+print("frames with scene-change cue (d >= theta_sc):", round(fit["frac_frames_scene_cue"], 4))
+print(json.dumps(fit["cue_percentiles"], indent=1))
+'''
+
+NB03_POLICIES = '''# ===================== CELL 6: POLICIES (replay + composed pycocotools eval) =====================
+import pandas as pd
+t = time.time()
+R = st.policies()
+rows = []
+for name, m in R.items():
+    a = m["all"]
+    r = {"policy": name, "mAP50-95": 100*a["map50_95"], "sd": 100*a.get("map50_95_sd", 0) if "map50_95_sd" in a else None,
+         "mAP50": 100*a["map50"], "INT8 frac": a["frac_level"].get("int8"), "switch/100": a.get("switch_rate_per_100"),
+         "est engine ms": a.get("est_engine_ms_mean")}
+    for s in ("easy", "crowded", "night"):
+        r[f"{s}"] = 100*m[s]["map50_95"] if m[s]["n_images"] else None
+        r[f"{s} INT8"] = m[s]["frac_level"].get("int8") if m[s]["n_images"] else None
+    rows.append(r)
+pd.set_option("display.width", 250)
+print(pd.DataFrame(rows).round(3).to_string(index=False))
+print("controller step time:", R[f"adaptive_K{cfg['controller']['K']}"]["all"]["ctrl_step_ms"])
+print("NOTE: calib development numbers with default (unlocked) controller parameters; est engine ms = microbench medians.")
+print(f"policies: {(time.time()-t)/60:.1f} min")
+'''
+
+NB03_SANITY = '''# ===================== CELL 7: SANITY CHECKS =====================
+SAN = st.sanity()
+for c in SAN["checks"]:
+    print(f"[{'PASS' if c['pass'] else 'FAIL'}] {c['check']}  {c['detail']}")
+print("informational:", SAN["informational"])
+print("ALL SANITY CHECKS PASS" if SAN["all_pass"] else "\\n*** SANITY FAILURES ABOVE (results saved) ***")
+'''
+
+
+def build_nb03(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    nb.cells = [
+        nbf.v4.new_markdown_cell(NB03_README),
+        nbf.v4.new_code_cell(config_and_env_cell("03_controller_dev", rev=rev)),
+        nbf.v4.new_code_cell(PIP_CELL),
+        nbf.v4.new_code_cell(NB03_PREPARE),
+        nbf.v4.new_code_cell(NB03_FEATURES),
+        nbf.v4.new_code_cell(NB03_FIT),
+        nbf.v4.new_code_cell(NB03_POLICIES),
+        nbf.v4.new_code_cell(NB03_SANITY),
+        nbf.v4.new_code_cell(zip_cell("03_controller_dev", NB02_AFTER_ZIP)),
+    ]
+    return nb
+
+
 BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02,
-            "02b_val_diagnostic.ipynb": build_nb02b}
+            "02b_val_diagnostic.ipynb": build_nb02b, "03_controller_dev.ipynb": build_nb03}
 
 
 def notebook_rev(name: str) -> str:
