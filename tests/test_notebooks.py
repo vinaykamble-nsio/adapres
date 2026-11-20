@@ -53,6 +53,23 @@ def test_notebook_structure(path):
         assert c.outputs == [] if hasattr(c, "outputs") else True
 
 
+@pytest.mark.parametrize("path", NB_FILES, ids=lambda p: p.name)
+def test_notebook_rev_embedded(path):
+    """Cell 1 carries the rev the repo generator computes, so Kaggle detects a stale import."""
+    nb = nbformat.read(path, as_version=4)
+    m = re.search(r'NOTEBOOK_REV = "([0-9a-f]{12})"', nb.cells[1].source)
+    assert m and m.group(1) == make_notebooks.notebook_rev(path.name)
+    assert "STALE NOTEBOOK" in nb.cells[1].source
+
+
+def test_install_cell_wheels_only_and_locks():
+    src = make_notebooks.PIP_CELL
+    ast.parse(src)
+    assert "pip_resolved.txt" in src and "--dry-run" in src
+    req = (REPO / "requirements-kaggle.txt").read_text()
+    assert "--only-binary=:all:" in req
+
+
 def test_token_never_printed():
     src = make_notebooks.config_and_env_cell("x")
     # the token is only used inside a one-off git -c header and redacted in errors

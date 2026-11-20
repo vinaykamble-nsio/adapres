@@ -18,10 +18,14 @@ KAGGLE = yaml.safe_load((REPO / "configs" / "kaggle.yaml").read_text())
 
 # --------------------------------------------------------------------------- shared cells
 
-def config_and_env_cell(nb_name: str, extra_config: str = "") -> str:
+REV_PLACEHOLDER = "__NOTEBOOK_REV__"
+
+
+def config_and_env_cell(nb_name: str, extra_config: str = "", rev: str = REV_PLACEHOLDER) -> str:
     return f'''# ===================== CELL 1: CONFIG + ENVIRONMENT CHECK =====================
 # Edit nothing below for a normal run except SMOKE_TEST.
 SMOKE_TEST = True   # True: tiny subset (run this first). False: full run.
+NOTEBOOK_REV = "{rev}"   # hash of this notebook's generated source; checked against the cloned repo
 
 CONFIG = {{
     "notebook": "{nb_name}",
@@ -103,6 +107,14 @@ except Exception as e:
     repo_source = "zip_dataset:" + os.path.dirname(hits[0])
 
 sys.path.insert(0, os.path.join(REPO, "src"))
+sys.path.insert(0, os.path.join(REPO, "scripts"))
+import make_notebooks
+expected_rev = make_notebooks.notebook_rev(CONFIG["notebook"] + ".ipynb")
+if expected_rev != NOTEBOOK_REV:
+    raise RuntimeError(f"STALE NOTEBOOK: this notebook is rev {{NOTEBOOK_REV}} but repo {{CONFIG['repo_ref']}} "
+                       f"generates rev {{expected_rev}}. Re-import notebooks/{{CONFIG['notebook']}}.ipynb "
+                       "from the repo (File -> Import Notebook), or push your local commits.")
+print("notebook rev", NOTEBOOK_REV, "matches repo")
 from adapres import config as C
 from adapres.repro import git_commit, set_seed
 cfg = C.load(os.path.join(REPO, CONFIG["config_path"]), CONFIG["overrides"])
@@ -124,34 +136,46 @@ print("results ->", RESULTS, "| logs ->", LOGS)
 '''
 
 
-PIP_CELL = '''# ===================== CELL 2: PINNED INSTALLS =====================
+PIP_CELL = r'''# ===================== CELL 2: INSTALLS (wheels only) + VERSION LOCK =====================
 # Internet must be ON. Installs only what the Kaggle image lacks; torch is not touched.
-import re
-print("python", sys.version)
+# --only-binary=:all: : never compile from source (that is what failed on onnx/tensorrt).
+import re, importlib.metadata as md
+print("python", sys.version, "| torch", torch.__version__, "| torch CUDA", torch.version.cuda)
 REQ = os.path.join(REPO, "requirements-kaggle.txt")
-reqs = [ln.split("#")[0].strip() for ln in open(REQ) if ln.split("#")[0].strip()]
-# Preflight: resolve every pin on its own (no install) so ALL bad pins are reported in one run.
+lines = [ln.split("#")[0].strip() for ln in open(REQ)]
+opts = [ln for ln in lines if ln.startswith("-")]
+reqs = [ln for ln in lines if ln and not ln.startswith("-")]
+PIP = [sys.executable, "-m", "pip", "install", "--disable-pip-version-check"]
+# Preflight: resolve each requirement on its own (no install) so ALL failures show in one run.
 bad = {}
 for req in reqs:
-    p = subprocess.run([sys.executable, "-m", "pip", "install", "--dry-run", "--no-deps", "--quiet",
-                        "--disable-pip-version-check", req], capture_output=True, text=True)
+    p = subprocess.run(PIP + ["--dry-run", "--no-deps", "--quiet", *opts, req], capture_output=True, text=True)
     if p.returncode != 0:
-        bad[req] = "\\n".join(l for l in p.stderr.splitlines() if l.startswith("ERROR")) or p.stderr[-2000:]
-    print(f"preflight {req:40s} {'OK' if p.returncode == 0 else 'FAILED'}")
+        bad[req] = "\n".join(l for l in p.stderr.splitlines() if "ERROR" in l) or p.stderr[-2000:]
+    print(f"preflight {req:45s} {'OK' if p.returncode == 0 else 'FAILED'}")
 if bad:
     for req, err in bad.items():
-        print(f"\\n--- {req} ---\\n{err}")
-    raise RuntimeError(f"{len(bad)} pin(s) do not resolve on this Kaggle image: {list(bad)}. "
-                       "Fix them in requirements-kaggle.txt (available versions listed above).")
-r = sh([sys.executable, "-m", "pip", "install", "--quiet", "--disable-pip-version-check",
-        "-r", REQ], check=False)
+        print(f"\n--- {req} ---\n{err}")
+    raise RuntimeError(f"{len(bad)} requirement(s) have no wheel for this Python/CUDA: {list(bad)}. "
+                       "Paste this whole cell output; the available versions are listed above.")
+r = sh(PIP + ["--quiet", "-r", REQ], check=False)
 with open(os.path.join(LOGS, f"{CONFIG['notebook']}_pip.log"), "w") as f:
-    f.write(r.stdout + "\\n--- stderr ---\\n" + r.stderr)
+    f.write(r.stdout + "\n--- stderr ---\n" + r.stderr)
 if r.returncode != 0:
-    raise RuntimeError("pip install failed (real error above). Fix the pin in requirements-kaggle.txt.")
-import importlib
+    raise RuntimeError("pip install failed (real error above).")
 importlib.invalidate_caches()
-import torch
+# Version lock: record exactly what got installed so requirements-kaggle.txt can be pinned to it.
+names = [re.split(r"[<>=!~\[ ]", q)[0] for q in reqs]
+resolved = {n: md.version(n) for n in names}
+os.makedirs(os.path.join(RESULTS, "env"), exist_ok=True)
+lock = "\n".join(f"{n}=={v}" for n, v in resolved.items())
+with open(os.path.join(RESULTS, "env", "pip_resolved.txt"), "w") as f:
+    f.write(f"# python {sys.version.split()[0]} torch {torch.__version__} cuda {torch.version.cuda}\n{lock}\n")
+print("RESOLVED VERSIONS (copy into requirements-kaggle.txt as exact pins):\n" + lock)
+if resolved.get("tensorrt-cu12-bindings") != resolved.get("tensorrt-cu12-libs"):
+    raise RuntimeError(f"TensorRT bindings/libs version mismatch: {resolved}")
+import tensorrt, onnx, onnxruntime
+print("import OK: tensorrt", tensorrt.__version__, "| onnx", onnx.__version__, "| onnxruntime", onnxruntime.__version__)
 print("torch still", torch.__version__, "cuda", torch.version.cuda)
 '''
 
@@ -294,7 +318,7 @@ print("ALL CHECKS PASSED")
 '''
 
 
-def build_nb01() -> nbf.NotebookNode:
+def build_nb01(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     nb = nbf.v4.new_notebook()
     nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
                    "language_info": {"name": "python"},
@@ -302,7 +326,7 @@ def build_nb01() -> nbf.NotebookNode:
                               "isGpuEnabled": True}}
     nb.cells = [
         nbf.v4.new_markdown_cell(NB01_README),
-        nbf.v4.new_code_cell(config_and_env_cell("01_env_and_data")),
+        nbf.v4.new_code_cell(config_and_env_cell("01_env_and_data", rev=rev)),
         nbf.v4.new_code_cell(PIP_CELL),
         nbf.v4.new_code_cell(NB01_ENV_PROBES),
         nbf.v4.new_code_cell(NB01_TREE),
@@ -313,7 +337,24 @@ def build_nb01() -> nbf.NotebookNode:
     return nb
 
 
-NOTEBOOKS = {"01_env_and_data.ipynb": build_nb01}
+BUILDERS = {"01_env_and_data.ipynb": build_nb01}
+
+
+def notebook_rev(name: str) -> str:
+    """Hash of the notebook's generated cell sources (with the rev placeholder), so a
+    Kaggle copy can detect that it is older than the repo it clones."""
+    import hashlib
+
+    nb = BUILDERS[name](REV_PLACEHOLDER)
+    blob = "\n---cell---\n".join(c.source for c in nb.cells)
+    return hashlib.sha256(blob.encode()).hexdigest()[:12]
+
+
+def build(name: str) -> nbf.NotebookNode:
+    return BUILDERS[name](notebook_rev(name))
+
+
+NOTEBOOKS = {name: (lambda n=name: build(n)) for name in BUILDERS}
 
 
 def main() -> int:

@@ -1,16 +1,22 @@
 # Installed on Kaggle by notebook cell 2 on top of the Kaggle GPU image.
 # torch/torchvision/numpy/pandas/opencv/pyarrow come from the Kaggle image and are
 # deliberately NOT reinstalled (replacing torch breaks the image's CUDA stack).
-# Exact installed versions are recorded in results/env/env_kaggle.json.
-# These pins are unverified until the notebook 01 SMOKE run passes: if pip
-# cannot resolve one on the current Kaggle image, the cell prints the real pip
-# error and we change the pin here (and record the change in the commit).
-ultralytics==8.3.40
-tensorrt==10.7.0
-onnx==1.17.0
-onnxslim==0.1.48
-# 1.20.1 does not exist on PyPI (Kaggle run 2026-11-20). 1.22.0: CUDA 12 / cuDNN 9 build.
-onnxruntime-gpu==1.22.0
-pycocotools==2.0.8
-nvidia-ml-py==12.560.30
+#
+# History (2026-11-20 Kaggle runs):
+#  - onnxruntime-gpu==1.20.1 does not exist on PyPI.
+#  - onnx==1.17.0 and tensorrt-cu12==10.7.0 have no wheels for the Kaggle Python, so pip
+#    tried to compile them from source and failed.
+# Therefore: wheels only (never compile), and version RANGES for one lock run. Cell 2
+# writes results/env/pip_resolved.txt; those exact versions then replace the ranges
+# below (one-time lock, recorded in git). TensorRT is installed via its wheel packages
+# (bindings provide `import tensorrt`) instead of the `tensorrt-cu12` sdist wrapper.
+--only-binary=:all:
+ultralytics>=8.3.40,<8.5
+tensorrt-cu12-bindings>=10.7,<11
+tensorrt-cu12-libs>=10.7,<11
+onnx>=1.17,<2
+onnxslim>=0.1.48,<0.2
+onnxruntime-gpu>=1.22,<2
+pycocotools>=2.0.8,<3
+nvidia-ml-py>=12.560,<14
 PyYAML>=6.0
