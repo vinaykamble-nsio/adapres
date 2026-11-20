@@ -1,0 +1,8 @@
+2026-11-20 08:44:08,671 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b2169b74-fa197951'], 'n_frames': 406, 'n_images': 406, 'n_annotations': 6332, 'slice_sizes': {'all': 406, 'easy': 115, 'crowded': 32, 'night': 0, 'scene_change_natural': 0}}
+2026-11-20 08:44:19,869 INFO adapres.eval_fixed: exporting fp32
+2026-11-20 08:45:55,934 INFO adapres.eval_fixed: exporting fp16
+2026-11-20 08:50:38,141 INFO adapres.eval_fixed: exporting int8
+2026-11-20 09:01:29,248 INFO adapres.eval_fixed: cache pt_fp32: 2/2 sequences
+2026-11-20 09:01:37,624 INFO adapres.eval_fixed: cache fp32: 2/2 sequences
+2026-11-20 09:01:44,255 INFO adapres.eval_fixed: cache fp16: 2/2 sequences
+2026-11-20 09:01:51,146 INFO adapres.eval_fixed: cache int8: 2/2 sequences

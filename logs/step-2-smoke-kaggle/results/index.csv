@@ -1,0 +1,11 @@
+exp_id,dataset,split,policy,mode,path,locked_config_sha256,git_commit,timestamp,smoke
+bdd_subsets,bdd100k_mot,calib+test,,data_prep,bdd100k_mot/bdd_subsets,,098a72578bae7b4ff16a8d644055fcced2f93483,2026-11-20T07:58:04.548640+00:00,False
+engines_yolo11s,bdd100k_mot,calib,engine_export,export,bdd100k_mot/engines_yolo11s,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+microbench_yolo11s,microbench,calib,microbench,microbench,microbench/microbench_yolo11s,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_fixed_pt_fp32,bdd100k_mot,calib,fixed_pt_fp32,cache,bdd100k_mot/calib_fixed_pt_fp32,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_fixed_fp32,bdd100k_mot,calib,fixed_fp32,cache,bdd100k_mot/calib_fixed_fp32,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_fixed_fp16,bdd100k_mot,calib,fixed_fp16,cache,bdd100k_mot/calib_fixed_fp16,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_fixed_int8,bdd100k_mot,calib,fixed_int8,cache,bdd100k_mot/calib_fixed_int8,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_oracle_cheap_dev,bdd100k_mot,calib,oracle_cheap,cache,bdd100k_mot/calib_oracle_cheap_dev,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+calib_oracle_best_dev,bdd100k_mot,calib,oracle_best,cache,bdd100k_mot/calib_oracle_best_dev,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True
+sanity_02_yolo11s,sanity,calib,sanity,check,sanity/sanity_02_yolo11s,,18f62138d0964cce8136071a428e2cf33c0c02ff,2026-11-20T08:44:08.069729+00:00,True

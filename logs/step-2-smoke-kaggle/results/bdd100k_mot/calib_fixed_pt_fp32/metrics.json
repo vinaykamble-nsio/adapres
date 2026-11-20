@@ -1,0 +1,227 @@
+{
+  "all": {
+    "energy_kind": "none",
+    "frac_level": {
+      "pt_fp32": 1.0
+    },
+    "lat_mean_ms": null,
+    "map50": 0.4436769689114922,
+    "map50_95": 0.25395877249607596,
+    "mean_f1_05": 0.5824184757469826,
+    "n_dets": 47005,
+    "n_images": 406,
+    "per_class_ap50": {
+      "bicycle": 0.797563785716486,
+      "bus": 0.0015457688595376551,
+      "car": 0.6305651024283209,
+      "motorcycle": -1.0,
+      "person": 0.5820402268199669,
+      "train": -1.0,
+      "truck": 0.2066699607331491
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.4453984241426654,
+      "bus": 0.0009739492676840232,
+      "car": 0.3903550919121853,
+      "motorcycle": -1.0,
+      "person": 0.30280515427114907,
+      "train": -1.0,
+      "truck": 0.13026124288669622
+    },
+    "timing_cache": {
+      "infer_ms": {
+        "mean": 21.647100391628825,
+        "median": 23.657902000081776,
+        "n": 406,
+        "p95": 23.722659000043222
+      },
+      "post_ms": {
+        "mean": 1.48075152463413,
+        "median": 1.4769155000067258,
+        "n": 406,
+        "p95": 1.6900940000823539
+      },
+      "pre_ms": {
+        "mean": 1.4266046551787206,
+        "median": 1.42235599992091,
+        "n": 406,
+        "p95": 1.5937129999201716
+      },
+      "wall_ms": {
+        "mean": 87.9773762438475,
+        "median": 92.03969149996283,
+        "n": 406,
+        "p95": 134.51884750003273
+      }
+    },
+    "timing_note": "cache-run timings (wall includes JPEG decode, single pass); NOT the Step 4 latency protocol"
+  },
+  "crowded": {
+    "energy_kind": "none",
+    "frac_level": {
+      "pt_fp32": 1.0
+    },
+    "lat_mean_ms": null,
+    "map50": 0.3606050838928438,
+    "map50_95": 0.21208453940135794,
+    "mean_f1_05": 0.6059474468714257,
+    "n_dets": 3289,
+    "n_images": 32,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.635207648615305,
+      "motorcycle": -1.0,
+      "person": 0.6547411438833957,
+      "train": -1.0,
+      "truck": 0.15247154307267463
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.37902395781926174,
+      "motorcycle": -1.0,
+      "person": 0.32743486389339704,
+      "train": -1.0,
+      "truck": 0.14187933589277296
+    },
+    "timing_cache": {
+      "infer_ms": {
+        "mean": 22.312302937514517,
+        "median": 23.654660500028513,
+        "n": 32,
+        "p95": 23.719385949948446
+      },
+      "post_ms": {
+        "mean": 1.4822850000157928,
+        "median": 1.4660785001296972,
+        "n": 32,
+        "p95": 1.6141807500616778
+      },
+      "pre_ms": {
+        "mean": 1.47743915626819,
+        "median": 1.4579334999780258,
+        "n": 32,
+        "p95": 1.6629138500434237
+      },
+      "wall_ms": {
+        "mean": 95.23202665623387,
+        "median": 95.79260650002652,
+        "n": 32,
+        "p95": 121.8554232999395
+      }
+    },
+    "timing_note": "cache-run timings (wall includes JPEG decode, single pass); NOT the Step 4 latency protocol"
+  },
+  "easy": {
+    "energy_kind": "none",
+    "frac_level": {
+      "pt_fp32": 1.0
+    },
+    "lat_mean_ms": null,
+    "map50": 0.3355139467062785,
+    "map50_95": 0.1910511669632628,
+    "mean_f1_05": 0.4965703384658478,
+    "n_dets": 11589,
+    "n_images": 115,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.5418309569555138,
+      "motorcycle": -1.0,
+      "person": 0.3953191001693923,
+      "train": -1.0,
+      "truck": 0.40490572970020816
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.326500014859303,
+      "motorcycle": -1.0,
+      "person": 0.21212820794433904,
+      "train": -1.0,
+      "truck": 0.2255764450494091
+    },
+    "timing_cache": {
+      "infer_ms": {
+        "mean": 23.565423713046624,
+        "median": 23.67127000002256,
+        "n": 115,
+        "p95": 23.733842099954927
+      },
+      "post_ms": {
+        "mean": 1.5150686347802231,
+        "median": 1.4764729999114934,
+        "n": 115,
+        "p95": 1.7538175000026963
+      },
+      "pre_ms": {
+        "mean": 1.441485913040236,
+        "median": 1.4227780000055645,
+        "n": 115,
+        "p95": 1.5968797000368795
+      },
+      "wall_ms": {
+        "mean": 97.23174115652989,
+        "median": 93.42140300009305,
+        "n": 115,
+        "p95": 136.642761699909
+      }
+    },
+    "timing_note": "cache-run timings (wall includes JPEG decode, single pass); NOT the Step 4 latency protocol"
+  },
+  "night": {
+    "energy_kind": "none",
+    "frac_level": {},
+    "lat_mean_ms": null,
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_dets": 0,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {},
+    "timing_cache": {
+      "infer_ms": {
+        "n": 0
+      },
+      "post_ms": {
+        "n": 0
+      },
+      "pre_ms": {
+        "n": 0
+      },
+      "wall_ms": {
+        "n": 0
+      }
+    },
+    "timing_note": "cache-run timings (wall includes JPEG decode, single pass); NOT the Step 4 latency protocol"
+  },
+  "scene_change_natural": {
+    "energy_kind": "none",
+    "frac_level": {},
+    "lat_mean_ms": null,
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_dets": 0,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {},
+    "timing_cache": {
+      "infer_ms": {
+        "n": 0
+      },
+      "post_ms": {
+        "n": 0
+      },
+      "pre_ms": {
+        "n": 0
+      },
+      "wall_ms": {
+        "n": 0
+      }
+    },
+    "timing_note": "cache-run timings (wall includes JPEG decode, single pass); NOT the Step 4 latency protocol"
+  }
+}

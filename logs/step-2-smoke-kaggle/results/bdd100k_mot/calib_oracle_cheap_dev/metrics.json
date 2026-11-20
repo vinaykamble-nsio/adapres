@@ -1,0 +1,119 @@
+{
+  "all": {
+    "energy_kind": "none",
+    "frac_level": {
+      "fp16": 0.3103448275862069,
+      "int8": 0.6896551724137931
+    },
+    "lat_mean_ms": null,
+    "map50": 0.44996644329324176,
+    "map50_95": 0.25334963121587356,
+    "mean_f1_05": 0.5978512252251729,
+    "n_dets": 46879,
+    "n_images": 406,
+    "per_class_ap50": {
+      "bicycle": 0.8224893917963222,
+      "bus": 0.0018268923666560207,
+      "car": 0.637763110703705,
+      "motorcycle": -1.0,
+      "person": 0.5754272502793776,
+      "train": -1.0,
+      "truck": 0.21232557132014784
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.4518322803826896,
+      "bus": 0.0010421266530580128,
+      "car": 0.38831447276785425,
+      "motorcycle": -1.0,
+      "person": 0.2940203672975947,
+      "train": -1.0,
+      "truck": 0.13153890897817136
+    }
+  },
+  "crowded": {
+    "energy_kind": "none",
+    "frac_level": {
+      "fp16": 0.375,
+      "int8": 0.625
+    },
+    "lat_mean_ms": null,
+    "map50": 0.35549514983055913,
+    "map50_95": 0.2040267982468004,
+    "mean_f1_05": 0.6114286470741297,
+    "n_dets": 3399,
+    "n_images": 32,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.6403675013302413,
+      "motorcycle": -1.0,
+      "person": 0.6423142408946394,
+      "train": -1.0,
+      "truck": 0.13929885709735584
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.3752653188967411,
+      "motorcycle": -1.0,
+      "person": 0.3132619156466877,
+      "train": -1.0,
+      "truck": 0.1275799584437727
+    }
+  },
+  "easy": {
+    "energy_kind": "none",
+    "frac_level": {
+      "fp16": 0.22608695652173913,
+      "int8": 0.7739130434782608
+    },
+    "lat_mean_ms": null,
+    "map50": 0.33767691905750663,
+    "map50_95": 0.19063224827616582,
+    "mean_f1_05": 0.5097039438114601,
+    "n_dets": 11415,
+    "n_images": 115,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.5524939381329771,
+      "motorcycle": -1.0,
+      "person": 0.3927832605908903,
+      "train": -1.0,
+      "truck": 0.4054304775061589
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.33053948706081054,
+      "motorcycle": -1.0,
+      "person": 0.20292128599380985,
+      "train": -1.0,
+      "truck": 0.2290682200500429
+    }
+  },
+  "night": {
+    "energy_kind": "none",
+    "frac_level": {},
+    "lat_mean_ms": null,
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_dets": 0,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  },
+  "scene_change_natural": {
+    "energy_kind": "none",
+    "frac_level": {},
+    "lat_mean_ms": null,
+    "map50": -1.0,
+    "map50_95": -1.0,
+    "mean_f1_05": null,
+    "n_dets": 0,
+    "n_images": 0,
+    "per_class_ap50": {},
+    "per_class_ap50_95": {}
+  }
+}

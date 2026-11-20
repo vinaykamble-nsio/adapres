@@ -1,0 +1,65 @@
+{
+  "all_pass": false,
+  "checks": [
+    {
+      "check": "pt_fp32 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 25.396
+    },
+    {
+      "check": "fp32 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 25.396
+    },
+    {
+      "check": "fp16 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 25.512
+    },
+    {
+      "check": "int8 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 25.205
+    },
+    {
+      "check": "FP16 vs FP32 (TRT) |diff|",
+      "pass": true,
+      "rule": "|diff| <= 0.5 pts",
+      "value_pts": 0.116
+    },
+    {
+      "check": "TRT FP32 vs PyTorch FP32 |diff|",
+      "pass": true,
+      "rule": "|diff| <= 0.5 pts",
+      "value_pts": 0.0
+    },
+    {
+      "check": "INT8 - FP16",
+      "pass": true,
+      "rule": "-3.0 <= diff <= +0.5 pts (slightly lower)",
+      "value_pts": -0.307
+    },
+    {
+      "check": "pipeline vs model.val() |diff| mAP50-95",
+      "pass": false,
+      "rule": "<= 0.5 pts",
+      "value_pts": 0.718
+    }
+  ],
+  "map50_95_pts": {
+    "fp16": 25.511716378166582,
+    "fp32": 25.395879371637122,
+    "int8": 25.204959672397685,
+    "pt_fp32": 25.395877249607597
+  },
+  "map50_pts": {
+    "fp16": 44.427137623046974,
+    "fp32": 44.367704992235744,
+    "int8": 44.12603082068288,
+    "pt_fp32": 44.36769689114922
+  }
+}

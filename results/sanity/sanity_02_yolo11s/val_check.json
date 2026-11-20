@@ -1,0 +1,16 @@
+{
+  "abs_diff_pts": {
+    "map50": 1.096219787555791,
+    "map50_95": 0.29288956088905915
+  },
+  "n_frames": 200,
+  "note": "pt FP32, crowd/ignore removed from GT in both pipelines (YOLO labels cannot hold them)",
+  "ours": {
+    "map50": 0.40033679279700146,
+    "map50_95": 0.2683691303518215
+  },
+  "ultralytics_val": {
+    "map50": 0.4112989906725594,
+    "map50_95": 0.2712980259607121
+  }
+}
