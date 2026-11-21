@@ -160,6 +160,21 @@ full:                          # notebook 04: everything left, one run, gated st
     smoke_n_clips: 1
     soft_min_level_agreement: 0.9   # reported; below this the stage records a warning (PLAN: report the gap)
 
+v2:                            # notebook 05: controller v2 (design frozen in configs/prereg_addendum.yaml)
+  exp_prefix: r05_
+  addendum: configs/prereg_addendum.yaml
+  v1_lock: results/locked/locked_bdd_main.yaml   # r04 hand-weighted controller, re-thresholded per budget
+  random_seeds: 10
+  bootstrap_resamples: 1000
+  smoke:
+    grid: {max_depth: [2], learning_rate: [0.1], max_iter: [50]}
+    K_grid: [1, 2]
+    n_folds: 2
+    bootstrap_resamples: 20
+    random_seeds: 2
+    energy_clips: 1
+    energy_frames_per_clip: 30
+
 step2:                         # notebook 02: fixed FP32/FP16/INT8 on calib clips only
   split: calib
   levels: [fp32, fp16, int8]

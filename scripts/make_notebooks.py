@@ -937,9 +937,103 @@ def build_nb04(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
+# --------------------------------------------------------------------------- notebook 05 (controller v2)
+
+NB05_README = """# 05 — Controller v2: learned risk under a fixed INT8 budget (pre-registered follow-up)
+
+**Purpose.** This is the follow-up to notebook 04 that responds to the review. The design is frozen
+in `configs/prereg_addendum.yaml`, and its SHA-256 is checked before anything runs; the notebook
+stops if the file changed. **The r04 result stays the pre-registered primary outcome.** v2 is
+reported whether it succeeds or fails.
+1. **Engines + calib cache** (rebuilt; gate vs committed Step 2).
+2. **Calib cues** (Step 3 logic).
+3. **Fit + lock on calib only:**
+   - gradient-boosted risk model (clip-grouped CV) predicting the per-frame FP16-over-INT8 gain;
+   - cross-fitted closed-loop thresholds for INT8 budgets 25 / 50 / 75 %, and K per budget;
+   - v1 (r04 controller) re-thresholded to each budget;
+   - lagged-oracle thresholds;
+   - every lock hashed.
+4. **Test cache**, only after the verified v2@50% lock.
+5. **Energy under mixed switching** on 6 seeded test clips (FP16, INT8, v2 pipelined and sequential,
+   forced alternation), plus a live-vs-replay check.
+6. **Test evaluation, once:**
+   - per budget: v2 vs matched random (10 seeds), v1, oracle (upper bound, uses GT) and lagged
+     oracle (GT one frame late, not deployable);
+   - cluster-bootstrap CIs; headroom captured; P1–P5.
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`**.
+2. *Settings* → **Accelerator: GPU T4 x2**, **Internet: On**; *Add-ons → Secrets* → tick **`GH_TOKEN`**.
+3. `SMOKE_TEST = True` first: about 30 min, mostly engine builds. Then `SMOKE_TEST = False` →
+   *Save Version → Save & Run All*: about 2–2.5 h. These are estimates, not yet measured.
+
+**Download afterwards:** `results_05_controller_v2.zip` → unzip into the repo root. It contains
+`results/bdd100k_mot/r05_*`, `results/locked/locked_v2_*` / `locked_v1_*` / `locked_lagged_*`,
+`v2_model.pkl` with its hash recorded in the locks, and `logs/`.
+"""
+
+NB05_SETUP = NB04_SETUP.replace("from adapres.pipeline.full import FullRun, GateError",
+                                "from adapres.pipeline.full import GateError\nfrom adapres.pipeline.v2 import V2Run") \
+    .replace('"work04")', '"work05")').replace("run = FullRun(cfg, SMOKE_TEST, REPO)",
+                                               "run = V2Run(cfg, SMOKE_TEST, REPO)\nprint(\"prereg addendum sha256:\", run.addendum_sha)") \
+    .replace("results_04_full_pipeline", "results_05_controller_v2").replace("04_full.log", "05_v2.log")
+
+NB05_S3 = '''# ===================== CELL 6: STAGE 3 - FIT + LOCK v2 (calib only) =====================
+S3 = stage(run.stage3_v2)
+print("model params:", S3["params"], "| held-out Spearman (calib CV):", round(S3["spearman"], 4))
+for rho, v in S3["per_rho"].items():
+    b = v["v2"]
+    print(f"rho={rho}: K={b['K']} tau={b['tau']:.4f} calib INT8 {b['calib_frac_int8']:.3f} calib mAP50-95 {100*b['calib_map50_95']:.2f}"
+          f" | v1 calib INT8 {v['v1_calib_frac']:.3f}")
+'''
+
+NB05_S5 = '''# ===================== CELL 8: STAGE 5 - ENERGY UNDER MIXED SWITCHING =====================
+S5 = stage(run.stage5_v2_energy)
+import pandas as pd
+rows = []
+for k, v in S5["summary"].items():
+    rows.append({"config": k, "lat med ms": v["latency_total_ms_median"]["median"], "fps": v["throughput_fps"]["median"] if v["throughput_fps"] else None,
+                 "E_total mJ/frame": v["E_total_mJ_per_frame"]["median"] if v["E_total_mJ_per_frame"] else None,
+                 "E_dyn mJ/frame": v["E_dyn_mJ_per_frame"]["median"] if v["E_dyn_mJ_per_frame"] else None,
+                 "INT8 frac": v.get("frac_int8"), "switch/100": v.get("switch_rate_per_100")})
+pd.set_option("display.width", 250)
+print(pd.DataFrame(rows).round(3).to_string(index=False))
+print("live vs replay:", S5["live"])
+'''
+
+NB05_S6 = '''# ===================== CELL 9: STAGE 6 - TEST EVALUATION (once) =====================
+S6 = stage(run.stage6_v2_eval)
+for rho, h in S6["headroom"].items():
+    print(f"rho={rho}: v2 {100*h['v2']:.2f} | random {100*h['random']:.2f} | v1 {100*h['v1']:.2f} | lagged {100*h['lagged_oracle']:.2f}"
+          f" | oracle {100*h['oracle']:.2f} | captured {h['captured']}")
+print(json.dumps({k: v for k, v in S6["hypotheses"].items() if k != "P4_headroom"}, indent=1, default=str)[:3000])
+'''
+
+
+def build_nb05(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    nb.cells = [
+        nbf.v4.new_markdown_cell(NB05_README),
+        nbf.v4.new_code_cell(config_and_env_cell("05_controller_v2", rev=rev)),
+        nbf.v4.new_code_cell(PIP_CELL),
+        nbf.v4.new_code_cell(NB05_SETUP),
+        nbf.v4.new_code_cell(NB04_S1),
+        nbf.v4.new_code_cell(NB04_S2),
+        nbf.v4.new_code_cell(NB05_S3),
+        nbf.v4.new_code_cell(NB04_S4),
+        nbf.v4.new_code_cell(NB05_S5),
+        nbf.v4.new_code_cell(NB05_S6),
+        nbf.v4.new_code_cell(zip_cell("05_controller_v2")),
+    ]
+    return nb
+
+
 BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02,
             "02b_val_diagnostic.ipynb": build_nb02b, "03_controller_dev.ipynb": build_nb03,
-            "04_full_pipeline.ipynb": build_nb04}
+            "04_full_pipeline.ipynb": build_nb04, "05_controller_v2.ipynb": build_nb05}
 
 
 def notebook_rev(name: str) -> str:

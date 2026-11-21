@@ -8,6 +8,8 @@ requires-python = ">=3.10"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = ["slow: end-to-end pipeline dry-runs (run before a Kaggle hand-off: pytest -m slow)"]
+addopts = "-m 'not slow'"
 
 [tool.ruff]
 line-length = 120

@@ -10,6 +10,8 @@ from test_step2_dryrun import _run_all, _step, repo  # noqa: F401  (fixture reus
 from adapres.data.classmap import EVAL_CATEGORIES
 from adapres.pipeline import val_diag as V
 
+pytestmark = pytest.mark.slow  # end-to-end dry-run; run with: pytest -m slow
+
 
 def test_parse_jdict_by_file_name_and_numeric_id():
     stem_to_id = {"seqA__seqA-0000001": 10, "42": 11}

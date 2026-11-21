@@ -15,6 +15,8 @@ from adapres import config as C
 from adapres.data.classmap import EVAL_CATEGORIES
 from adapres.pipeline import build_bdd_subsets, eval_fixed
 
+pytestmark = pytest.mark.slow  # end-to-end dry-run; run with: pytest -m slow
+
 STRATA = {**{f"day{i:02d}": "daytime" for i in range(6)}, **{f"nit{i:02d}": "night" for i in range(4)}}
 
 

@@ -1,0 +1,78 @@
+# Pre-registration ADDENDUM: controller v2 (learned risk estimator under a fixed INT8 budget).
+# Written 2026-11-21, AFTER the notebook 04 (r04) test results were seen, in response to review.
+# Frozen before any v2 code touches real data: its SHA-256 is written to
+# configs/prereg_addendum.yaml.sha256 and notebook 05 refuses to run if the hash does not match.
+# configs/preregistration.yaml (2026-11-20) is unchanged; the r04 result stays the PRIMARY,
+# pre-registered outcome. v2 is a post-hoc-designed, pre-registered FOLLOW-UP, reported whatever
+# its result.
+
+frozen_on: 2026-11-21
+seed: 2027
+design_context: >
+  r04 locked controller collapsed to ~96% INT8 and was indistinguishable from fixed INT8 and
+  matched random. Diagnosed causes: (a) the objective maximised the INT8 share within delta, so
+  the controller was never required to choose WHICH frames get INT8; (b) hand-weighted cues.
+  v2 fixes the INT8 share (budget) and learns which frames are risky.
+
+data:
+  calib: same 20 calib clips (BDD100K MOT val, Step 1 selection); the ONLY data used for fitting.
+  test: same 40 test clips; evaluated ONCE with the locked v2 configs.
+  engines: rebuilt in notebook 05; all baselines re-evaluated in the same run (self-consistent).
+
+risk_estimator:
+  label: g_t = F1@0.5(FP16, t) - F1@0.5(INT8, t)   # per-frame gain of FP16 over INT8 (calib GT)
+  model: sklearn HistGradientBoostingRegressor, random_state 2027, loss squared_error
+  hyperparameter_grid: {max_depth: [2, 3], learning_rate: [0.05, 0.1], max_iter: [100, 200]}
+  selection: 5-fold GroupKFold by clip on calib; metric = mean held-out Spearman(pred, g); ties -> simpler (smaller max_depth, max_iter)
+  features_causal:   # available before running the detector on frame t
+    image: [m, c, d]                       # motion, clutter, HSV Bhattacharyya distance (frames t, t-1)
+    previous_detections:                   # from the level actually used at t-1 (score >= 0.25, evaluated classes)
+      - n                                  # count
+      - mean_score
+      - min_score
+      - frac_low_conf                      # share with 0.25 <= score < 0.5
+      - n_near_threshold                   # detections with 0.10 <= score < 0.25
+      - frac_small                         # share with box area < 0.001 of the image
+      - mean_log_rel_area
+      - class_entropy                      # over evaluated classes
+      - delta_n                            # n(t-1) - n(t-2)
+  training_rows: each calib frame twice, previous detections from INT8 and from FP16 (robust to the level used)
+  cross_fitting: for closed-loop calib replay each clip uses the model trained without its fold
+
+decision:
+  rule: FP16 if risk_t >= tau_rho else INT8; scene-change override (d >= 0.5) -> FP16 for the frame + H=3
+  persistence_K_grid: [1, 2, 3]
+  budgets_rho: [0.25, 0.50, 0.75]          # target INT8 fraction
+  tau_rho: bisection on the cross-fitted CLOSED-LOOP calib replay so the realised calib INT8 fraction = rho (+-0.01)
+  K_selection: per rho, max calib mAP@0.5:0.95 (composed pycocotools); ties -> larger K
+  cues_mode_live: pipelined (cue computation overlapped with GPU inference); sequential also measured
+
+baselines_on_test:
+  - fixed FP32 / FP16 / INT8
+  - matched_random@rho: Markov chain fitted to the v2@rho TEST log (same INT8 share and switch rate), 10 seeds
+  - v1@rho: r04 hand-weighted score (its locked weights/alpha/theta_sc/K) with its threshold re-set on calib to budget rho
+  - oracle@rho (UPPER BOUND, uses GT): INT8 on the rho*N frames with the smallest g_t
+  - lagged_oracle@rho (REFERENCE, uses GT one frame late, not deployable): risk_t = g_{t-1}, threshold on calib for rho
+
+hypotheses:
+  P1_primary: >
+    At rho = 0.50, v2 has higher test mAP@0.5:0.95 than matched_random@0.50: the paired cluster-bootstrap
+    95% CI (1000 resamples over clips, seed 2027) of the difference lies entirely above 0.
+  P2: same comparison at rho = 0.25 and rho = 0.75 (secondary).
+  P3: at rho = 0.50, v2 has higher test mAP@0.5:0.95 than v1@0.50 (paired CI above 0) (secondary).
+  P4_descriptive: headroom captured = (v2 - matched_random) / (oracle - matched_random) per rho (no threshold).
+  P5_energy: >
+    Live, pipelined, on 6 seeded test clips (mixed switching), v2@0.50 has lower median latency and lower
+    E_total/frame than fixed FP16 (3 interleaved repeats; E_total primary, E_dyn secondary).
+
+energy_protocol:
+  clips: 6 seeded test clips, first 150 frames each, pre-decoded
+  configs: [fixed_fp16, fixed_int8, v2@0.50 pipelined, v2@0.50 sequential, forced alternation int8/fp16 every frame]
+  repeats: 3, warm-up 20 s, settle <= 60 s, idle 30 s per repeat, measure >= 60 s
+  report: realised INT8 fraction and switch rate inside the measurement windows
+
+reporting_rules:
+  - r04 remains the pre-registered primary result; v2 is reported as a pre-registered follow-up designed after r04.
+  - v2 results are reported in full whether P1-P5 succeed or fail; no re-locking or re-running on test.
+  - Claims are limited to YOLO11s, BDD100K MOT (val-derived splits), one Tesla T4, TensorRT PTQ INT8/FP16.
+  - The oracle and lagged oracle are references that use ground truth, never presented as deployable.

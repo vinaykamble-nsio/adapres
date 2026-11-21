@@ -10,6 +10,8 @@ from conftest import REPO, fake_reader, make_fake_bdd
 from adapres import config as C
 from adapres.pipeline import build_bdd_subsets as B
 
+pytestmark = pytest.mark.slow  # end-to-end dry-run; run with: pytest -m slow
+
 STRATA = {**{f"day{i:02d}": "daytime" for i in range(8)},
           **{f"nit{i:02d}": "night" for i in range(5)},
           **{f"dd{i:02d}": "dawn/dusk" for i in range(2)}}

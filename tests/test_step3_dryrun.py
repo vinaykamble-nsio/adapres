@@ -13,6 +13,8 @@ from test_step2_dryrun import _cfg, _run_all, _step, repo  # noqa: F401
 
 from adapres.pipeline import controller_dev as CD
 
+pytestmark = pytest.mark.slow  # end-to-end dry-run; run with: pytest -m slow
+
 
 def fake_image(path):
     """Deterministic synthetic BGR frame: per-sequence base colour + per-frame texture."""

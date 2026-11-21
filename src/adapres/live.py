@@ -75,6 +75,74 @@ class AdaptiveStepper:
                 "total_ms": (t3 - t0) * 1000, "engine_infer_ms": tim.get("infer_ms")}
 
 
+class V2Stepper:
+    """Live controller v2 (learned risk, fixed budget). Same step contract as AdaptiveStepper.
+    pipelined: image cues of frame t+1 are computed on a CPU worker while the GPU runs frame t."""
+
+    def __init__(self, backends: Mapping[str, object], model, params, featurizer_factory: Callable,
+                 frames: Sequence[np.ndarray], seq_starts: Sequence[int], img_area: float, tau_c: float,
+                 pipelined: bool):
+        from .risk import RiskController
+
+        self.be, self.ff, self.frames = backends, featurizer_factory, frames
+        self.starts, self.area, self.pipelined = set(int(s) for s in seq_starts), img_area, pipelined
+        self.ctl = RiskController(model, params, tau_c)
+        self.ex = ThreadPoolExecutor(max_workers=1) if pipelined else None
+        self.i, self._fut, self._fz = 0, None, None
+
+    def close(self):
+        if self.ex:
+            self.ex.shutdown(wait=True)
+
+    def step(self) -> dict:
+        n = len(self.frames)
+        i = self.i % n
+        t0 = time.perf_counter()
+        if i in self.starts or self._fz is None:
+            if self._fut is not None:
+                self._fut.result()
+                self._fut = None
+            self.ctl.reset()
+            self._fz = self.ff()
+        if self.pipelined:
+            if self._fut is None:
+                self._fut = self.ex.submit(self._fz, self.frames[i])
+            img_cues = self._fut.result()
+            nxt = (i + 1) % n
+            self._fut = self.ex.submit(self._fz, self.frames[nxt]) if nxt not in self.starts else None
+        else:
+            img_cues = self._fz(self.frames[i])
+        t1 = time.perf_counter()
+        out = self.ctl.step(img_cues)
+        t2 = time.perf_counter()
+        dets, tim = self.be[out["level"]].predict(self.frames[i])
+        t3 = time.perf_counter()
+        self.ctl.observe(dets, self.area)
+        self.i += 1
+        return {"frame": i, "level": out["level"], "switched": out["switched"], "dets": dets, "risk": out["risk"],
+                "feat_wait_ms": (t1 - t0) * 1000, "ctrl_ms": (t2 - t1) * 1000, "infer_wall_ms": (t3 - t2) * 1000,
+                "total_ms": (time.perf_counter() - t0) * 1000, "engine_infer_ms": tim.get("infer_ms")}
+
+
+class AlternatingStepper:
+    """Forced switching every frame (INT8, FP16, INT8, ...): the worst-case switching cost."""
+
+    def __init__(self, backends: Mapping[str, object], frames: Sequence[np.ndarray]):
+        self.be, self.frames, self.i = backends, frames, 0
+
+    def close(self):
+        pass
+
+    def step(self) -> dict:
+        i = self.i % len(self.frames)
+        lv = "int8" if self.i % 2 == 0 else "fp16"
+        t0 = time.perf_counter()
+        dets, tim = self.be[lv].predict(self.frames[i])
+        self.i += 1
+        return {"frame": i, "level": lv, "switched": 1, "dets": dets, "total_ms": (time.perf_counter() - t0) * 1000,
+                "engine_infer_ms": tim.get("infer_ms")}
+
+
 class FixedStepper:
     def __init__(self, backend, frames: Sequence[np.ndarray]):
         self.be, self.frames, self.i = backend, frames, 0

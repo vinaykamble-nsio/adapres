@@ -97,6 +97,26 @@ reported, and nothing was re-run.
   - replay was validated against a live run on 10 test clips (1,924 frames: identical decisions
     and mAP).
 
+## E. Pre-registered follow-up: controller v2 (decided 2026-11-21, after r04 results)
+
+- **Why:** a review found that the r04 controller beats neither fixed INT8 nor matched random,
+  collapses to 96% INT8, has energy measured without mixed switching, and leans on an optimistic
+  oracle.
+- **What:** a learned per-frame risk estimator under fixed INT8 budgets (25/50/75%). The design,
+  features, model grid, decision rule, baselines (matched random, v1@budget, oracle@budget, lagged
+  oracle), the primary test (P1) and the reporting rules are frozen in
+  `configs/prereg_addendum.yaml`. Its SHA-256 (`configs/prereg_addendum.yaml.sha256`) is verified by
+  notebook 05 and recorded in every v2 lock.
+- **Integrity rules:**
+  - v2 is fitted and locked on calib only, and the test split is evaluated once.
+  - **The r04 result stays the pre-registered primary outcome.** v2 is reported as a follow-up
+    designed after seeing r04, whatever its result.
+  - No re-locking or re-running on test.
+- **Implementation note, decided before the freeze:** detections are canonicalised to float32 before
+  computing features, so live and cached detections give identical decisions. A local dry-run found
+  72% live-vs-replay agreement without this, and 100% with it.
+- The claims, with v2 wording fixed for both outcomes, are in `CLAIMS.md`.
+
 ## D. Provenance (clean commits)
 
 | Stage | Commit |

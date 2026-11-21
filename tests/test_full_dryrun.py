@@ -18,6 +18,8 @@ from adapres.data.classmap import EVAL_CATEGORIES
 from adapres.energy.nvml_meter import NvmlMeter
 from adapres.pipeline import full as FULL
 
+pytestmark = pytest.mark.slow  # end-to-end dry-run; run with: pytest -m slow
+
 REG: dict[str, int] = {}
 NAMES: list[str] = []
 

@@ -81,11 +81,14 @@ def run_protocol(steppers: Mapping[str, object], meter, warmup_s: float, settle_
                    if any(s["sm_clock_mhz"] is not None for s in w["samples"]) else None,
                    "util_gpu_median": float(np.median([s["util_gpu"] for s in w["samples"] if s["util_gpu"] is not None]))
                    if any(s["util_gpu"] is not None for s in w["samples"]) else None}
-            if name.startswith("adaptive"):
+            if name.startswith("adaptive") or (rows and "level" in rows[0]):
                 lv = [x["level"] for x in rows]
                 rec["frac_int8"] = float(np.mean([v == "int8" for v in lv])) if lv else None
-                rec["feat_wait_ms"] = _lat_stats([x["feat_wait_ms"] for x in rows])
-                rec["ctrl_ms"] = _lat_stats([x["ctrl_ms"] for x in rows])
+                rec["switch_rate_per_100"] = (100.0 * float(np.mean([x.get("switched", 0) for x in rows]))
+                                              if rows else None)
+                if "feat_wait_ms" in rows[0]:
+                    rec["feat_wait_ms"] = _lat_stats([x["feat_wait_ms"] for x in rows])
+                    rec["ctrl_ms"] = _lat_stats([x["ctrl_ms"] for x in rows])
             runs.append(rec)
             log(f"  {name:22s} N={N:5d} {rec['throughput_fps'] or 0:7.1f} fps  E_dyn/frame="
                 f"{rec['E_dyn_mJ_per_frame'] if rec['E_dyn_mJ_per_frame'] is None else round(rec['E_dyn_mJ_per_frame'], 2)} mJ  "
@@ -105,8 +108,9 @@ def run_protocol(steppers: Mapping[str, object], meter, warmup_s: float, settle_
                                                     "max": float(max(med))}
         p95 = [x["latency_total_ms"].get("p95") for x in rs]
         summary[name]["latency_total_ms_p95"] = {"median": float(np.median(p95)), "min": float(min(p95)), "max": float(max(p95))}
-        if name.startswith("adaptive"):
+        if rs and rs[0].get("frac_int8") is not None:
             summary[name]["frac_int8"] = float(np.median([x["frac_int8"] for x in rs]))
+            summary[name]["switch_rate_per_100"] = float(np.median([x["switch_rate_per_100"] for x in rs]))
     return {"runs": runs, "summary": summary, "method": meter.method, "repeats": repeats,
             "warmup_s": warmup_s, "settle_max_s": settle_s, "idle_s": idle_s, "measure_s": measure_s, "seed": seed}
 

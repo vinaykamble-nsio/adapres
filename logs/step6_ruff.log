@@ -1,0 +1,3 @@
+tests\test_v2_dryrun.py:19:22: F811 Redefinition of unused `repo` from line 10: `repo` redefined here
+tests\test_v2_dryrun.py:24:14: F811 Redefinition of unused `repo` from line 10: `repo` redefined here
+Found 2 errors.

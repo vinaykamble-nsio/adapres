@@ -67,6 +67,7 @@ def package_versions() -> dict:
         "torch", "torchvision", "ultralytics", "tensorrt", "tensorrt-cu12", "tensorrt-cu13", "onnx",
         "onnxruntime", "onnxruntime-gpu", "onnxslim", "pycocotools", "nvidia-ml-py",
         "numpy", "pandas", "pyarrow", "opencv-python", "opencv-python-headless", "opencv-contrib-python", "PyYAML",
+        "scikit-learn", "scipy",
     ]
     return {n: _pkg(n) for n in names}
 

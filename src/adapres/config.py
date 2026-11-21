@@ -105,6 +105,12 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "full.timing": dict,
     "full.smoke_timing": dict,
     "full.live_validation": dict,
+    "v2.exp_prefix": str,
+    "v2.addendum": str,
+    "v2.v1_lock": str,
+    "v2.random_seeds": int,
+    "v2.bootstrap_resamples": int,
+    "v2.smoke": dict,
 }
 
 VALID_LEVELS = ("fp32", "fp16", "int8")
