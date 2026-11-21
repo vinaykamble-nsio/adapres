@@ -1,0 +1,72 @@
+{
+  "config_sha256": "c45423e8c6154aa3778da6379cba8b13a3c5b2c696b1b4464daeb0e5ea16cb7a",
+  "dataset": "bdd100k_mot",
+  "derived_from": {
+    "results/bdd100k_mot/r04_calibration/calibration.json": "488f1acf71b9d2ea9b3ccce24a56afa1af365a65312212077cfa5a4467085d2d",
+    "results/bdd100k_mot/r04_test_adaptive_ksweep1/metrics.json": "132dfeaef36081f60c02344d63f9bc0c12b3a762be95aa0bf8b3f91c48b73c52",
+    "results/bdd100k_mot/r04_test_adaptive_ksweep2/metrics.json": "5e538cc1f3c5df57a63890c00e85c2db2cd5c6761a10bd4ca85a3246af88a0a2",
+    "results/bdd100k_mot/r04_test_adaptive_ksweep3/metrics.json": "cdd80785f57f64063bf553a5534c46fd3d9e431ec37587d2c09a3d2bf448bf60",
+    "results/bdd100k_mot/r04_test_adaptive_ksweep5/metrics.json": "091bffa0b1a6245375981961f6d476a393c646b34c1b5469b5988d5b031c8ad3",
+    "results/bdd100k_mot/r04_test_adaptive_ksweep8/metrics.json": "481995caeef161fd2aa1794fbc4729ffa5ae8cbfe4410eaea5b5e829eba9f97c",
+    "results/bdd100k_mot/r04_test_adaptive_main/metrics.json": "132dfeaef36081f60c02344d63f9bc0c12b3a762be95aa0bf8b3f91c48b73c52",
+    "results/bdd100k_mot/r04_test_bootstrap/bootstrap.json": "591d523cc77fdfade5cb4de78569da068d3701252da79d35c7de7720fdc77cf2",
+    "results/bdd100k_mot/r04_test_energy_latency/energy.json": "24f900d2396658f3b104140f0cdb78c34fe7439ee6742ed2e71287997f9377a8",
+    "results/bdd100k_mot/r04_test_fixed_fp16/metrics.json": "e33da58f35a35f3abb5f8fdce21cfd14d033c942e51a346579a2717a0163000a",
+    "results/bdd100k_mot/r04_test_fixed_fp32/metrics.json": "05b634bb97fbc5066c429a646efcb5292439ea4a30f022c8d68ff99d9e485e98",
+    "results/bdd100k_mot/r04_test_fixed_int8/metrics.json": "5d918553def96e3a1bba15c5dd39a25737abb77b6fb4d3d5abbf6ca8f30bcd4a",
+    "results/bdd100k_mot/r04_test_random_iid/metrics.json": "6d2ca6e485c875d307855ce17b2c687cae49a68269f021edae08c5a372005684",
+    "results/bdd100k_mot/r04_test_random_matched/metrics.json": "126f2dedbe5a63d9de5b2ddccf495e689d7d0b6b213531fdf2d0e1cbfbce6341",
+    "results/microbench/r04_microbench_yolo11s/microbench.json": "f606a1173663aca89275172587607817a1c994eb5e5710aa3c2641923d5e5141"
+  },
+  "env": {
+    "cuda_visible_devices": null,
+    "git": {
+      "commit": "facaaef6bb2a1966c86a85b27afd2a6c75e329ad",
+      "dirty": true,
+      "source": "git"
+    },
+    "nvidia_smi": {
+      "error": "FileNotFoundError(2, 'The system cannot find the file specified', None, 2, None)"
+    },
+    "os": "Windows-11-10.0.26300-SP0",
+    "packages": {
+      "PyYAML": "6.0.3",
+      "numpy": "2.5.5",
+      "nvidia-ml-py": null,
+      "onnx": null,
+      "onnxruntime": null,
+      "onnxruntime-gpu": null,
+      "onnxslim": null,
+      "opencv-contrib-python": null,
+      "opencv-python": null,
+      "opencv-python-headless": "5.1.0.95",
+      "pandas": "3.1.1",
+      "pyarrow": null,
+      "pycocotools": "2.0.11",
+      "tensorrt": null,
+      "tensorrt-cu12": null,
+      "torch": null,
+      "torchvision": null,
+      "ultralytics": null
+    },
+    "platform": "local",
+    "python": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]",
+    "seed": 2027,
+    "timestamp_utc": "2026-11-21T16:24:49.942094+00:00",
+    "torch_cuda": {
+      "error": "ModuleNotFoundError(\"No module named 'torch'\", name='torch')"
+    }
+  },
+  "exp_id": "r04_test_hypotheses_v2",
+  "git_commit": "facaaef6bb2a1966c86a85b27afd2a6c75e329ad",
+  "git_dirty": true,
+  "hypotheses_revision": 2,
+  "mode": "derived (local recompute from results/, no new data)",
+  "notes": "DEVIATIONS.md V1-V3: E_total primary; H3 on K-sweep (sensitivity); H4 engine-only saving",
+  "results_commit": "4e35b3e1d68453b5e17eb15c09293e3d94eaabe3",
+  "seed": 2027,
+  "smoke": false,
+  "split": "test",
+  "supersedes": "r04_test_hypotheses (revision 1)",
+  "timestamp_utc": "2026-11-21T16:24:49.942094+00:00"
+}

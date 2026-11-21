@@ -1,0 +1,9 @@
+| Configuration | latency ms (median) | p95 ms | fps | E_total mJ/frame | E_dyn mJ/frame | power W | INT8 frac. |
+|---|---|---|---|---|---|---|---|
+| Fixed FP32 | 11.02 [10.95–11.03] | 11.44 | 90.7 | 722.9 [720.9–724.3] | 364.8 [357.7–384.8] | 65.7 | – |
+| Fixed FP16 | 5.78 [5.76–5.79] | 6.07 | 171.8 | 392.5 [392.3–393.9] | 203.8 [199.1–215.2] | 67.6 | – |
+| Fixed INT8 | 5.03 [5.03–5.04] | 5.34 | 197.0 | 332.5 [331.8–332.8] | 166.7 [164.1–177.1] | 65.6 | – |
+| Adaptive, sequential cues | 8.85 [8.83–8.90] | 9.50 | 112.1 | 369.0 [368.8–369.5] | 79.0 [71.4–96.3] | 41.3 | 1.00 |
+| Adaptive, pipelined cues | 5.54 [5.52–5.55] | 6.57 | 175.0 | 363.4 [361.2–366.2] | 177.8 [172.7–190.9] | 63.7 | 1.00 |
+
+Measured on one Tesla T4 (live, frames pre-decoded), 3 interleaved repeats of ≥60 s after ≥20 s warm-up; median [min–max] over repeats. Energy from the NVML board energy counter (nvml_energy_counter): E_total/frame is primary; E_dyn/frame = (ΔE − P_idle·T)/N is secondary (idle-subtraction favours configurations that leave the GPU waiting, see DEVIATIONS.md V1). GPU board energy only.

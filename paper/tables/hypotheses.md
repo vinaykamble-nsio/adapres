@@ -1,0 +1,8 @@
+| Hypothesis | Criterion | Value | Result |
+|---|---|---|---|
+| H1 | mAP within δ = 0.5 pts of FP16, and lower latency and E_total than FP16 | drop 0.90 pts; pipelined: latency 5.54 vs 5.78 ms, E_total 363.4 vs 392.5 mJ | not supported (pipelined), not supported (sequential) |
+| H2 | adaptive − matched random: 95% CI excludes 0 (> 0) | +0.007 pts (bootstrap mean), CI [-0.702, +0.270] | not supported |
+| H3 (sensitivity) | every K ≥ 2: fewer switches than K = 1 and \|Δ mAP\| < 0.3 pts | K=2: 1.30 vs 1.48/100, +0.003; K=3: 1.21 vs 1.48/100, -0.004; K=5: 1.18 vs 1.48/100, +0.023; K=8: 1.03 vs 1.48/100, +0.143 | supported |
+| H4 | FP16 more often on night/crowded/scene-change than easy; > 50% of saving from easy | FP16 frac: crowded 0.208, easy 0.011, night 0.016, scene_change 0.787; easy share 0.505 | supported |
+
+Pre-registered hypotheses on the test split, evaluated mechanically (revision 2: E_total primary; H3 on the K-sweep as a sensitivity analysis; H4 engine-latency-only saving share; DEVIATIONS.md V1–V3). Revision 1 (r04_test_hypotheses) is superseded.

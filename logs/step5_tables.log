@@ -1,0 +1,4 @@
+$ python paper/make_tables.py (2026-11-21T16:26:45Z)
+{'test_main': 7, 'test_energy_latency': 5, 'test_ci_pairs': 6, 'test_ablations': 18, 'test_ksweep': 5, 'calibration': 13, 'hypotheses': 4, 'provenance': 10}
+{'test_main': 7, 'test_energy_latency': 5, 'test_ci_pairs': 6, 'test_ablations': 18, 'test_ksweep': 5, 'calibration': 13, 'hypotheses': 4, 'provenance': 10}
+{'test_main': 7, 'test_energy_latency': 5, 'test_ci_pairs': 6, 'test_ablations': 18, 'test_ksweep': 5, 'calibration': 13, 'hypotheses': 4, 'provenance': 10}

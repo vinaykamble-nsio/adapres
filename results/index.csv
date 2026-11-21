@@ -65,3 +65,4 @@ r04_test_random_matched,bdd100k_mot,test,random_matched,replay,bdd100k_mot/r04_t
 r04_test_random_iid,bdd100k_mot,test,random_iid,replay,bdd100k_mot/r04_test_random_iid,,4e35b3e1d68453b5e17eb15c09293e3d94eaabe3,2026-11-20T17:47:49.384560+00:00,False
 r04_test_bootstrap,bdd100k_mot,test,bootstrap,replay,bdd100k_mot/r04_test_bootstrap,16a1faf1ab9b3c939b65c5d3410d219ae3aec1a812b53861519c0c331708e95b,4e35b3e1d68453b5e17eb15c09293e3d94eaabe3,2026-11-20T17:47:49.384560+00:00,False
 r04_test_hypotheses,bdd100k_mot,test,hypotheses,replay,bdd100k_mot/r04_test_hypotheses,16a1faf1ab9b3c939b65c5d3410d219ae3aec1a812b53861519c0c331708e95b,4e35b3e1d68453b5e17eb15c09293e3d94eaabe3,2026-11-20T17:47:49.384560+00:00,False
+r04_test_hypotheses_v2,bdd100k_mot,test,hypotheses_v2,derived,bdd100k_mot/r04_test_hypotheses_v2,,facaaef6bb2a1966c86a85b27afd2a6c75e329ad,2026-11-21T16:24:49.942094+00:00,False

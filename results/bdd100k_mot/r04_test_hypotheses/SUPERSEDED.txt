@@ -1,0 +1,5 @@
+This hypotheses.json (revision 1, written by notebook 04) is SUPERSEDED by
+results/bdd100k_mot/r04_test_hypotheses_v2/hypotheses.json (revision 2).
+Reasons (DEVIATIONS.md V1-V3): H3 compared the locked K (=1) with K=1; H4's saving share
+included the constant controller overhead; energy primary metric changed to E_total.
+The original file is kept unchanged for the record.

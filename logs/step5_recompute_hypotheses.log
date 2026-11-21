@@ -1,0 +1,110 @@
+$ python scripts/recompute_hypotheses.py (2026-11-21T16:24:49Z)
+{
+ "revision": 2,
+ "H1": {
+  "map_drop_pts": 0.8950603614213626,
+  "delta_pts": 0.5,
+  "map_within_delta": false,
+  "energy_metric": "E_total (primary); E_dyn secondary",
+  "measured": {
+   "sequential": {
+    "latency_median_ms": 8.849057999213983,
+    "fp16_latency_median_ms": 5.784675000541029,
+    "E_total_mJ_per_frame": 369.00148214021044,
+    "fp16_E_total_mJ_per_frame": 392.52700998933176,
+    "E_dyn_mJ_per_frame_secondary": 78.98263183369386,
+    "fp16_E_dyn_mJ_per_frame_secondary": 203.7617213748147,
+    "lower_latency": false,
+    "lower_energy_total": true,
+    "lower_energy_dyn_secondary": true,
+    "supported": false
+   },
+   "pipelined": {
+    "latency_median_ms": 5.544517999624077,
+    "fp16_latency_median_ms": 5.784675000541029,
+    "E_total_mJ_per_frame": 363.41230241858693,
+    "fp16_E_total_mJ_per_frame": 392.52700998933176,
+    "E_dyn_mJ_per_frame_secondary": 177.79383111777557,
+    "fp16_E_dyn_mJ_per_frame_secondary": 203.7617213748147,
+    "lower_latency": true,
+    "lower_energy_total": true,
+    "lower_energy_dyn_secondary": true,
+    "supported": false
+   }
+  },
+  "supported_sequential": false,
+  "supported_pipelined": false
+ },
+ "H2": {
+  "diff_mean_pts": 0.006740417702504901,
+  "diff_ci95_pts": [
+   -0.7019627949452903,
+   0.2701042671782406
+  ],
+  "supported": false,
+  "matched_frac_int8": {
+   "adaptive": 0.9647255002565418,
+   "random_matched": 0.9646741918932786
+  },
+  "matched_switch_rate": {
+   "adaptive": 1.4751154438173422,
+   "random_matched": 1.4507439712673165
+  }
+ },
+ "H3": {
+  "analysis": "sensitivity (K-sweep, theta fixed at the locked value; no recalibration)",
+  "locked_K": 1,
+  "per_K": {
+   "2": {
+    "switch_rate": 1.2955361723961005,
+    "switch_rate_K1": 1.4751154438173422,
+    "map_change_pts_vs_K1": 0.00292255787307516,
+    "fewer_switches": true,
+    "map_change_below_0p3": true
+   },
+   "3": {
+    "switch_rate": 1.2057465366854798,
+    "switch_rate_K1": 1.4751154438173422,
+    "map_change_pts_vs_K1": -0.003635662633261205,
+    "fewer_switches": true,
+    "map_change_below_0p3": true
+   },
+   "5": {
+    "switch_rate": 1.1800923550538738,
+    "switch_rate_K1": 1.4751154438173422,
+    "map_change_pts_vs_K1": 0.02338674917077843,
+    "fewer_switches": true,
+    "map_change_below_0p3": true
+   },
+   "8": {
+    "switch_rate": 1.026167265264238,
+    "switch_rate_K1": 1.4751154438173422,
+    "map_change_pts_vs_K1": 0.14288499318692582,
+    "fewer_switches": true,
+    "map_change_below_0p3": true
+   }
+  },
+  "supported": true
+ },
+ "H4": {
+  "frac_fp16_by_slice": {
+   "easy": 0.011195001301744337,
+   "crowded": 0.20833333333333334,
+   "night": 0.01568627450980392,
+   "scene_change": 0.7875
+  },
+  "fp16_more_often_than_easy": {
+   "crowded": true,
+   "night": true,
+   "scene_change": true
+  },
+  "engine_saving_ms_total": {
+   "easy": 2684.240298199257,
+   "all": 5315.474271394579
+  },
+  "saving_share_from_easy": 0.5049860390905465,
+  "saving_definition": "engine latency only (microbench medians), controller overhead excluded",
+  "supported": true
+ },
+ "note": "computed mechanically from test results; H5 (contention) not run (out of scope)"
+}

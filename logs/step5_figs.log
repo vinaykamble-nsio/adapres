@@ -1,0 +1,8 @@
+{
+ "accuracy_cost": "C:\\Private\\paper\\paper\\figs\\accuracy_cost.pdf",
+ "measured_latency_energy": "C:\\Private\\paper\\paper\\figs\\measured_latency_energy.pdf",
+ "slices": "C:\\Private\\paper\\paper\\figs\\slices.pdf",
+ "ksweep": "C:\\Private\\paper\\paper\\figs\\ksweep.pdf",
+ "ci_pairs": "C:\\Private\\paper\\paper\\figs\\ci_pairs.pdf",
+ "trace": "C:\\Private\\paper\\paper\\figs\\trace.pdf"
+}

@@ -64,7 +64,7 @@ def _pkg(name: str) -> str | None:
 
 def package_versions() -> dict:
     names = [
-        "torch", "torchvision", "ultralytics", "tensorrt", "tensorrt-cu12", "onnx",
+        "torch", "torchvision", "ultralytics", "tensorrt", "tensorrt-cu12", "tensorrt-cu13", "onnx",
         "onnxruntime", "onnxruntime-gpu", "onnxslim", "pycocotools", "nvidia-ml-py",
         "numpy", "pandas", "pyarrow", "opencv-python", "opencv-python-headless", "opencv-contrib-python", "PyYAML",
     ]

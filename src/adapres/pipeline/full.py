@@ -31,6 +31,7 @@ import yaml
 
 from .. import baselines
 from .. import calibrate as CAL
+from .. import hypotheses as HYP
 from ..controller import ControllerParams
 from ..data import bdd_mot
 from ..energy import protocol as PROTO
@@ -660,54 +661,9 @@ class FullRun:
         return {"main": out["adaptive_main"]["all"], "hypotheses": hyp, "aggregates": agg}
 
     def _hypotheses(self, out, agg, boot) -> dict:
-        """Pre-registered H1-H4 evaluated mechanically (configs/preregistration.yaml). Values, not prose."""
-        a, f16 = out["adaptive_main"], out["fixed_fp16"]
-        meas = self.energy["summary"]
-        d = self.F["delta_pts"]
-        e_ad = {m: meas.get(f"adaptive_{m}", {}).get("E_dyn_mJ_per_frame") for m in ("sequential", "pipelined")}
-        l_ad = {m: meas.get(f"adaptive_{m}", {}).get("latency_total_ms_median") for m in ("sequential", "pipelined")}
-        e16 = meas["fixed_fp16"]["E_dyn_mJ_per_frame"]
-        l16 = meas["fixed_fp16"]["latency_total_ms_median"]
-        H1 = {"map_drop_pts": 100 * (f16["all"]["map50_95"] - a["all"]["map50_95"]), "delta_pts": d,
-              "map_within_delta": 100 * (f16["all"]["map50_95"] - a["all"]["map50_95"]) <= d,
-              "measured": {m: {"latency_median_ms": (l_ad[m] or {}).get("median"),
-                               "fp16_latency_median_ms": l16["median"],
-                               "lower_latency": bool(l_ad[m] and l_ad[m]["median"] < l16["median"]),
-                               "E_dyn_mJ_per_frame": (e_ad[m] or {}).get("median") if e_ad[m] else None,
-                               "fp16_E_dyn_mJ_per_frame": e16["median"] if e16 else None,
-                               "lower_energy": bool(e_ad[m] and e16 and e_ad[m]["median"] < e16["median"])}
-                          for m in ("sequential", "pipelined")}}
-        H1["supported_sequential"] = H1["map_within_delta"] and H1["measured"]["sequential"]["lower_latency"] and \
-            H1["measured"]["sequential"]["lower_energy"]
-        H1["supported_pipelined"] = H1["map_within_delta"] and H1["measured"]["pipelined"]["lower_latency"] and \
-            H1["measured"]["pipelined"]["lower_energy"]
-        pr = boot["pairs"].get("adaptive_main - random_matched", {}).get("map50_95", {})
-        H2 = {"diff_ci95_pts": [100 * x for x in pr.get("ci95", [float("nan")] * 2)],
-              "supported": bool(pr and pr["excludes_zero"] and pr["ci95"][0] > 0),
-              "matched_frac_int8": {"adaptive": a["all"]["frac_level"]["int8"],
-                                    "random_matched": agg["random_matched"]["all"]["frac_level"]["int8"]},
-              "matched_switch_rate": {"adaptive": a["all"]["switch_rate_per_100"],
-                                      "random_matched": agg["random_matched"]["all"].get("switch_rate_per_100")}}
-        H3 = {}
-        if "adaptive_ksweep1" in out:
-            k1 = out["adaptive_ksweep1"]["all"]
-            Kmain = self.locks["main"]["params"]["K_down"]
-            H3 = {"K_main": Kmain, "switch_rate_K1": k1["switch_rate_per_100"],
-                  "switch_rate_main": a["all"]["switch_rate_per_100"],
-                  "map_change_pts": 100 * (a["all"]["map50_95"] - k1["map50_95"]),
-                  "supported": bool(Kmain >= 2 and a["all"]["switch_rate_per_100"] < k1["switch_rate_per_100"]
-                                    and abs(100 * (a["all"]["map50_95"] - k1["map50_95"])) < 0.3)}
-        fp16_frac = {sl: a[sl]["frac_level"]["fp16"] for sl in ("easy", "crowded", "night") if a[sl].get("n_images")}
-        if a.get("scene_change", {}).get("frac_level"):
-            fp16_frac["scene_change"] = a["scene_change"]["frac_level"]["fp16"]
-        easy = fp16_frac.get("easy")
-        # share of the total estimated saving (vs FP16) that comes from easy frames
-        sav = {sl: (self.engine_ms_all["fp16"] - a[sl]["lat_mean_ms"]) * a[sl]["n_images"]
-               for sl in ("easy", "all") if a[sl].get("n_images")}
-        H4 = {"frac_fp16_by_slice": fp16_frac,
-              "fp16_more_often_than_easy": {sl: v > easy for sl, v in fp16_frac.items() if sl != "easy"} if easy is not None else {},
-              "saving_share_from_easy": (sav["easy"] / sav["all"]) if sav.get("all") else None}
-        H4["supported"] = bool(H4["fp16_more_often_than_easy"] and all(H4["fp16_more_often_than_easy"].values())
-                               and (H4["saving_share_from_easy"] or 0) > 0.5)
-        return {"H1": H1, "H2": H2, "H3": H3, "H4": H4, "note": "computed mechanically from test results; "
-                "H5 (contention) not run (out of scope)"}
+        """Pre-registered H1-H4, computed by adapres.hypotheses (revision 2: E_total primary,
+        H3 on the K-sweep as a sensitivity analysis, H4 engine-latency-only saving share).
+        The original r04 run used revision 1 (superseded, see DEVIATIONS.md)."""
+        ks = {int(k[len("adaptive_ksweep"):]): v["all"] for k, v in out.items() if k.startswith("adaptive_ksweep")}
+        return HYP.compute(out, agg, boot, self.energy["summary"], ks, self.engine_ms_all, self.F["delta_pts"],
+                           int(self.locks["main"]["params"]["K_down"]))

@@ -1,0 +1,17 @@
+| Item | Value |
+|---|---|
+| configurations searched (Stage A) | 32376 |
+| configurations scored with mAP (Stage B) | 20 |
+| status (calib) | feasible |
+| FP16 calib mAP50-95 | 26.87 |
+| locked calib mAP50-95 | 26.44 |
+| calib drop vs FP16 (pts; δ = 0.5) | 0.44 |
+| weights (m, c, n, u, s) | 0.25, 0.00, 0.50, 0.00, 0.25 |
+| θ / α / θ_sc / K_up / K_down / H | 0.6118 / 1.0 / 0.5 / 1 / 1 / 3 |
+| calib INT8 fraction / switches per 100 | 0.960 / 1.80 |
+| engine latency INT8 / FP16 (ms, microbench) | 1.990 / 2.697 |
+| switch penalty (ms) | -0.078 |
+| sequential cue cost (ms/frame) | 2.696 |
+| locked config SHA-256 | 16a1faf1ab9b3c93… |
+
+Calibration on the calib split only (PLAN §3.5) and the locked main configuration. The lock sat at the δ limit on calib and did not hold on test (limitation, DEVIATIONS.md L1).

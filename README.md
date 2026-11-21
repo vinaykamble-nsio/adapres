@@ -70,6 +70,19 @@ python -m venv .venv
 Every notebook needs Accelerator **GPU T4 x2**, which is pinned to one GPU; P100 is rejected
 because Pascal has no fast INT8. Internet must be **On**.
 
+## Step 5: tables, figures, numbers (local, from results/ only)
+
+```powershell
+.venv\Scripts\python paper\make_all.py   # refuses to run with uncommitted tracked changes
+```
+It writes:
+- `results/bdd100k_mot/r04_test_hypotheses_v2/` (hypotheses, revision 2);
+- `paper/tables/*.{md,tex,csv}`;
+- `paper/figs/*.pdf` and `paper/figs/alt_text.json`;
+- `paper/numbers.tex` (LaTeX macros; the manuscript cites numbers only through these).
+
+Post-results decisions and limitations are in **`DEVIATIONS.md`**.
+
 ## Detection cache dataset (input of notebook 03)
 
 Kaggle can't always attach another notebook's output (an interactive session's output can't be
