@@ -1,0 +1,45 @@
+K: 8
+controller:
+  H: 3
+  K_down: 8
+  K_up: 8
+  alpha: 1.0
+  levels:
+  - int8
+  - fp16
+  norm:
+    c:
+    - 0.02387934027777778
+    - 0.1661067708333333
+    m:
+    - 0.003950653594771242
+    - 0.10440864991830062
+    n:
+    - 2.0
+    - 18.0
+    u:
+    - 0.2260858300328255
+    - 0.5691344133019447
+  scene_override: true
+  start_level: fp16
+  theta: 0.6118429746001607
+  theta_sc: 0.5
+  w_h: 0.0
+  weights:
+    c: 0.0
+    m: 0.25
+    n: 0.5
+    s: 0.25
+    u: 0.0
+dataset: bdd100k_mot
+delta_pts: 0.5
+engine_sha256:
+  fp16: 2ad8fc60a77a09fac77c9207db404c08607d97320c28e2ab0a0a4a61318568ee
+  fp32: 7d32b8d1ce784e4fdd5ac140c84f6273bb93fc0deb37c974464717e179ea08a2
+  int8: 2cc6f201db4afacf25f81b6a4b028aeb2cefe954577c38faabc9e9afac01f6f5
+fit_split: calib
+fp16_calib_map50_95: 0.26874079325598943
+git_commit: 4e35b3e1d68453b5e17eb15c09293e3d94eaabe3
+role: K-sweep
+tau_c: 0.25
+u_empty: 0.0

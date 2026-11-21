@@ -1,0 +1,395 @@
+{
+  "config": {
+    "bdd": {
+      "images_dir_name": "track_images_val",
+      "label_split": "val",
+      "labels_dir_name": "box_track_labels_trainval",
+      "smoke": {
+        "calib": {
+          "n_sequences": 3,
+          "strata_targets": {
+            "dawn_dusk": 0,
+            "daytime": 2,
+            "night": 1
+          }
+        },
+        "int8_calib_frames": 50,
+        "test": {
+          "n_sequences": 3,
+          "strata_targets": {
+            "dawn_dusk": 0,
+            "daytime": 2,
+            "night": 1
+          }
+        }
+      },
+      "subsets": {
+        "calib": {
+          "n_sequences": 20,
+          "strata_targets": {
+            "dawn_dusk": 2,
+            "daytime": 12,
+            "night": 6
+          }
+        },
+        "int8_calib_frames": 500,
+        "test": {
+          "n_sequences": 40,
+          "strata_targets": {
+            "dawn_dusk": 4,
+            "daytime": 24,
+            "night": 12
+          }
+        }
+      }
+    },
+    "classmap": {
+      "ignore_mode": "all_eval_classes"
+    },
+    "controller": {
+      "H": 3,
+      "K": 2,
+      "K_down": null,
+      "K_up": null,
+      "alpha": 0.6,
+      "levels": [
+        "int8",
+        "fp16"
+      ],
+      "norm_percentiles": [
+        5,
+        95
+      ],
+      "scene_override": true,
+      "start_level": "fp16",
+      "theta_quantile": 0.5,
+      "theta_sc": 0.4,
+      "u_empty": 0.0,
+      "w_h": 0.0,
+      "weights": {
+        "c": 0.2,
+        "m": 0.2,
+        "n": 0.2,
+        "s": 0.2,
+        "u": 0.2
+      }
+    },
+    "env": {
+      "cuda_visible_devices": "0",
+      "energy_probe_seconds": 5,
+      "require_ort_cuda": false
+    },
+    "eval": {
+      "ignore_ioa": 0.5,
+      "max_dets": 300,
+      "perframe_iou": 0.5
+    },
+    "features": {
+      "canny_high": 200,
+      "canny_low": 100,
+      "hist_bins": 32,
+      "width": 320
+    },
+    "full": {
+      "calib": {
+        "K_sweep": [
+          1,
+          2,
+          3,
+          5,
+          8
+        ],
+        "Ks": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "ablation_stage_b_max": 40,
+        "ablation_stage_b_top": 10,
+        "alphas": [
+          0.6,
+          1.0
+        ],
+        "pareto_deltas": [
+          0.25,
+          0.5,
+          1.0,
+          2.0
+        ],
+        "simplex_step": 0.25,
+        "stage_a_f1_slack": 0.02,
+        "stage_b_max": 200,
+        "stage_b_top": 20,
+        "theta_quantiles": [
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.5,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.95
+        ],
+        "theta_scs": [
+          0.3,
+          0.4,
+          0.5
+        ]
+      },
+      "delta_pts": 0.5,
+      "exp_prefix": "r04_",
+      "gate_calib_map_tol_pts": 0.5,
+      "live_validation": {
+        "frac_clips": 0.25,
+        "smoke_n_clips": 1,
+        "soft_min_level_agreement": 0.9
+      },
+      "smoke_calib": {
+        "Ks": [
+          1,
+          2
+        ],
+        "ablation_stage_b_max": 4,
+        "ablation_stage_b_top": 2,
+        "alphas": [
+          1.0
+        ],
+        "simplex_step": 0.5,
+        "stage_b_max": 6,
+        "stage_b_top": 3,
+        "theta_quantiles": [
+          0.25,
+          0.5,
+          0.75
+        ],
+        "theta_scs": [
+          0.4
+        ]
+      },
+      "smoke_timing": {
+        "frames_per_clip": 40,
+        "idle_s": 3,
+        "measure_s": 5,
+        "n_measure_clips": 1,
+        "repeats": 1,
+        "settle_s": 0,
+        "switch_penalty_frames": 40,
+        "warmup_s": 2
+      },
+      "test": {
+        "bootstrap_resamples": 1000,
+        "random_seeds": 10,
+        "smoke_bootstrap_resamples": 30,
+        "smoke_n_sequences": 2
+      },
+      "timing": {
+        "frames_per_clip": 150,
+        "idle_s": 30,
+        "measure_s": 60,
+        "n_measure_clips": 2,
+        "repeats": 3,
+        "settle_s": 60,
+        "switch_penalty_frames": 200,
+        "warmup_s": 20
+      }
+    },
+    "model": {
+      "conf": 0.001,
+      "conf_cue": 0.25,
+      "imgsz": 640,
+      "iou": 0.7,
+      "max_det": 300,
+      "name": "yolo11s",
+      "rect": false,
+      "size_rule_min_int8_speedup": 0.1,
+      "weights": "yolo11s.pt"
+    },
+    "paths": {
+      "bdd_dataset_slug": "tcjpaperdatasets",
+      "data_dir": "data",
+      "input_root": "/kaggle/input",
+      "logs_dir": "logs",
+      "results_dir": "results",
+      "work_root": "/kaggle/working"
+    },
+    "seed": 2027,
+    "slices": {
+      "crowded_percentile": 90,
+      "easy_excludes_natural_scene_change": true,
+      "easy_max_count": "median",
+      "natural_scene_change": {
+        "min_tracks": 3,
+        "new_track_ratio": 0.5
+      }
+    },
+    "splice": {
+      "max_segments": 3,
+      "min_segments": 2,
+      "n_streams": 20,
+      "segment_len": 40,
+      "smoke_n_streams": 2,
+      "window": 5
+    },
+    "step2": {
+      "int8_batch": 1,
+      "levels": [
+        "fp32",
+        "fp16",
+        "int8"
+      ],
+      "microbench_iters": 300,
+      "microbench_warmup": 50,
+      "n_sequences": 20,
+      "pt_reference": false,
+      "sanity": {
+        "fp16_vs_fp32_max_abs_pts": 0.5,
+        "int8_max_drop_pts": 3.0,
+        "int8_max_gain_pts": 0.5,
+        "trt_fp32_vs_pt_max_abs_pts": 0.5,
+        "val_check_max_abs_pts": 0.5,
+        "val_diag": {
+          "high_conf_match_min": 0.95,
+          "ours_dup_other_class_max": 0.01,
+          "theirs_dup_other_class_min": 0.1
+        }
+      },
+      "smoke_n_sequences": 2,
+      "smoke_val_check_frames": 50,
+      "split": "calib",
+      "val_check_frames": 200,
+      "warmup_frames": 50
+    },
+    "step3": {
+      "K_sweep": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "iid_p_int8": 0.5,
+      "random_seeds": 10,
+      "smoke_n_sequences": 2,
+      "split": "calib"
+    }
+  },
+  "config_sha256": "8d1bda2b2b7d9d39bb4b7edeee43c561e08d13a737ed27e25223e48612868b03",
+  "dataset": "bdd100k_mot",
+  "energy_method": "none",
+  "engine_sha256": {
+    "fp16": "2ad8fc60a77a09fac77c9207db404c08607d97320c28e2ab0a0a4a61318568ee",
+    "fp32": "7d32b8d1ce784e4fdd5ac140c84f6273bb93fc0deb37c974464717e179ea08a2",
+    "int8": "2cc6f201db4afacf25f81b6a4b028aeb2cefe954577c38faabc9e9afac01f6f5"
+  },
+  "env": {
+    "cuda_visible_devices": "0",
+    "git": {
+      "commit": "4e35b3e1d68453b5e17eb15c09293e3d94eaabe3",
+      "dirty": false,
+      "source": "git"
+    },
+    "nvidia_smi": {
+      "gpus": [
+        {
+          "clocks.max.sm": "1590 MHz",
+          "driver_version": "580.178.04",
+          "memory.total": "15360 MiB",
+          "name": "Tesla T4",
+          "persistence_mode": "Disabled",
+          "power.limit": "70.00 W",
+          "pstate": "P8",
+          "uuid": "GPU-ceba9dae-b814-d54c-0e2f-f1b3e474895a"
+        },
+        {
+          "clocks.max.sm": "1590 MHz",
+          "driver_version": "580.178.04",
+          "memory.total": "15360 MiB",
+          "name": "Tesla T4",
+          "persistence_mode": "Disabled",
+          "power.limit": "70.00 W",
+          "pstate": "P8",
+          "uuid": "GPU-bdbfda18-8369-6ca6-e2be-74ced9909094"
+        }
+      ]
+    },
+    "os": "Linux-6.18.55+-x86_64-with-glibc2.39",
+    "packages": {
+      "PyYAML": "6.0.3",
+      "numpy": "2.1.3",
+      "nvidia-ml-py": "13.615.71",
+      "onnx": "1.23.2",
+      "onnxruntime": null,
+      "onnxruntime-gpu": "1.32.0",
+      "onnxslim": "0.1.99",
+      "opencv-contrib-python": "4.14.0.94",
+      "opencv-python": "4.14.0.94",
+      "opencv-python-headless": "4.14.0.94",
+      "pandas": "2.3.3",
+      "pyarrow": "23.0.1",
+      "pycocotools": "2.0.11",
+      "tensorrt": null,
+      "tensorrt-cu12": null,
+      "torch": "2.11.0+cu130",
+      "torchvision": "0.26.0+cu130",
+      "ultralytics": "8.4.216"
+    },
+    "platform": "kaggle",
+    "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+    "seed": 2027,
+    "timestamp_utc": "2026-11-20T17:47:49.384560+00:00",
+    "torch_cuda": {
+      "available": true,
+      "cuda_version": "13.0",
+      "device0": "Tesla T4",
+      "device_count": 1
+    }
+  },
+  "exp_id": "r04_test_adaptive_abl_S-n",
+  "git_commit": "4e35b3e1d68453b5e17eb15c09293e3d94eaabe3",
+  "git_dirty": false,
+  "imgsz": 640,
+  "locked_config": "results/locked/locked_bdd_abl_S-n.yaml",
+  "locked_config_sha256": "67ac2d68884ed43aad05d43edc27ef6d468cedaf6aca13bd9f9c97cc503a0787",
+  "mode": "replay",
+  "model": "yolo11s",
+  "notes": "notebook 04 (combined run, rebuilt engines)",
+  "policy": "adaptive_abl_S-n",
+  "seed": 2027,
+  "sequences": [
+    "b1c9c847-3bda4659",
+    "b1d0091f-f2c2d2ae",
+    "b1d10d08-ec660956",
+    "b1d968b9-563405f4",
+    "b1e1a7b8-0aec80e8",
+    "b1ee702d-4a193906",
+    "b1f4491b-16256d7c",
+    "b1f4491b-9958bd99",
+    "b205eb4d-f84aaa1a",
+    "b20e291a-32ac11c1",
+    "b20eae11-18cd8ca2",
+    "b216243d-55963da2",
+    "b2169b74-fa197951",
+    "b21c86ac-0dc77d82",
+    "b21c86ac-2eb7ba16",
+    "b21c86ac-71205084",
+    "b2208b0f-2796a692",
+    "b23adb0d-72704b27",
+    "b23b2649-6af03cd5",
+    "b251b746-00138418"
+  ],
+  "smoke": false,
+  "split": "test",
+  "subset_manifest_sha256": "c6580c1cb90ee939b0b19abc87f391ccc0b79a5c0f8f72d8cf4e01916c273355",
+  "timestamp_utc": "2026-11-20T17:47:49.384560+00:00"
+}

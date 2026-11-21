@@ -1,0 +1,330 @@
+{
+  "1_engines_calib_cache": {
+    "stage": "1_engines_calib_cache",
+    "pass": true,
+    "checks": [
+      {
+        "check": "Step 2 binding sanity: fp32 mAP50-95 valid",
+        "pass": true,
+        "detail": 26.879
+      },
+      {
+        "check": "Step 2 binding sanity: fp16 mAP50-95 valid",
+        "pass": true,
+        "detail": 26.874
+      },
+      {
+        "check": "Step 2 binding sanity: int8 mAP50-95 valid",
+        "pass": true,
+        "detail": 26.04
+      },
+      {
+        "check": "Step 2 binding sanity: FP16 vs FP32 (TRT) |diff|",
+        "pass": true,
+        "detail": -0.005
+      },
+      {
+        "check": "Step 2 binding sanity: INT8 - FP16",
+        "pass": true,
+        "detail": -0.834
+      },
+      {
+        "check": "rebuilt fp32 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 1.315462372364351e-06,
+          "crowded": 6.017764664356662e-06,
+          "easy": 5.2962002838885525e-06,
+          "night": 1.9447589233445584e-06,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "rebuilt fp16 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.023827354769323517,
+          "crowded": 0.05296139238460951,
+          "easy": 0.04583217535596984,
+          "night": 0.003125539314424719,
+          "scene_change_natural": 0.08282301690391569
+        }
+      },
+      {
+        "check": "rebuilt int8 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.06418097261792766,
+          "crowded": 0.2131673575581028,
+          "easy": 0.139502341161174,
+          "night": 0.08738740837782866,
+          "scene_change_natural": 0.0009449961792168393
+        }
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-20T18:23:50Z"
+  },
+  "2_calib_dev": {
+    "stage": "2_calib_dev",
+    "pass": true,
+    "checks": [
+      {
+        "check": "fixed_fp16: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "fixed_int8: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "oracle_cheap: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "random_matched: INT8 fraction matches adaptive (|diff| <= 0.05)",
+        "pass": true,
+        "detail": {
+          "adaptive": 0.5058227848101265,
+          "random_matched": 0.4974430379746836
+        }
+      },
+      {
+        "check": "random_matched: switch rate matches adaptive (within 25% relative or 1/100)",
+        "pass": true,
+        "detail": {
+          "adaptive": 3.4683544303797467,
+          "random_matched": 3.5443037974683547
+        }
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-20T18:30:57Z"
+  },
+  "3_calibrate_lock": {
+    "stage": "3_calibrate_lock",
+    "pass": true,
+    "checks": [
+      {
+        "check": "lock main written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock delta0.25 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock delta0.5 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock delta1.0 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock delta2.0 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-m written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_S-m written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-c written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_S-c written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-n written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_S-n written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-u written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_S-u written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-s written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_S-s written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-hyst written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-sc-override written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-asym written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock abl_A-ema written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock ksweep1 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock ksweep2 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock ksweep3 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock ksweep5 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock ksweep8 written and hash-verified",
+        "pass": true
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "main config feasible on calib (mAP >= FP16 - delta)",
+        "pass": true,
+        "detail": "feasible"
+      }
+    ],
+    "time_utc": "2026-11-20T19:05:46Z"
+  },
+  "4_test_cache": {
+    "stage": "4_test_cache",
+    "pass": true,
+    "checks": [
+      {
+        "check": "test cache complete (cues + 3 levels for every test frame)",
+        "pass": true,
+        "detail": 7796
+      },
+      {
+        "check": "test and calib clip sets are disjoint",
+        "pass": true
+      },
+      {
+        "check": "locked main config hash verified before reading test",
+        "pass": true,
+        "detail": "16a1faf1ab9b3c939b65c5d3410d219ae3aec1a812b53861519c0c331708e95b"
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "spliced streams available for the scene-change slice",
+        "pass": true,
+        "detail": 20
+      }
+    ],
+    "time_utc": "2026-11-20T19:21:24Z"
+  },
+  "5_timing_energy": {
+    "stage": "5_timing_energy",
+    "pass": true,
+    "checks": [
+      {
+        "check": "protocol measured fixed_fp32",
+        "pass": true
+      },
+      {
+        "check": "protocol measured fixed_fp16",
+        "pass": true
+      },
+      {
+        "check": "protocol measured fixed_int8",
+        "pass": true
+      },
+      {
+        "check": "protocol measured adaptive_sequential",
+        "pass": true
+      },
+      {
+        "check": "protocol measured adaptive_pipelined",
+        "pass": true
+      },
+      {
+        "check": "energy method recorded",
+        "pass": true,
+        "detail": "nvml_energy_counter"
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "live vs replay level agreement >= 0.9",
+        "pass": true,
+        "detail": 1.0
+      },
+      {
+        "check": "live vs replay |mAP50-95 diff| <= 0.5 pts",
+        "pass": true,
+        "detail": {
+          "map50_95": 0.0,
+          "map50": 0.0
+        }
+      }
+    ],
+    "time_utc": "2026-11-20T19:53:46Z"
+  },
+  "6_test_eval": {
+    "stage": "6_test_eval",
+    "pass": true,
+    "checks": [
+      {
+        "check": "locked main: reference replay == fast replay (identical decisions)",
+        "pass": true
+      },
+      {
+        "check": "every policy evaluated on all test frames",
+        "pass": true
+      },
+      {
+        "check": "bootstrap ran (1000 resamples)",
+        "pass": true
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-20T22:24:05Z"
+  }
+}

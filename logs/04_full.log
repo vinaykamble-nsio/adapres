@@ -1,0 +1,84 @@
+2026-11-20 17:48:00,870 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b1d0091f-f2c2d2ae', 'b1d10d08-ec660956', 'b1d968b9-563405f4', 'b1e1a7b8-0aec80e8', 'b1ee702d-4a193906', 'b1f4491b-16256d7c', 'b1f4491b-9958bd99', 'b205eb4d-f84aaa1a', 'b20e291a-32ac11c1', 'b20eae11-18cd8ca2', 'b216243d-55963da2', 'b2169b74-fa197951', 'b21c86ac-0dc77d82', 'b21c86ac-2eb7ba16', 'b21c86ac-71205084', 'b2208b0f-2796a692', 'b23adb0d-72704b27', 'b23b2649-6af03cd5', 'b251b746-00138418'], 'n_frames': 3950, 'n_images': 3950, 'n_annotations': 55474, 'matches_step1_report': True, 'slice_sizes': {'all': 3950, 'easy': 1486, 'crowded': 417, 'night': 924, 'scene_change_natural': 6}}
+2026-11-20 17:48:01,385 INFO adapres.eval_fixed: exporting fp32
+2026-11-20 17:49:38,936 INFO adapres.eval_fixed: exporting fp16
+2026-11-20 17:54:15,870 INFO adapres.eval_fixed: exporting int8
+2026-11-20 18:11:37,930 INFO adapres.eval_fixed: cache fp32: 20/20 sequences
+2026-11-20 18:12:41,153 INFO adapres.eval_fixed: cache fp16: 20/20 sequences
+2026-11-20 18:13:41,147 INFO adapres.eval_fixed: cache int8: 20/20 sequences
+2026-11-20 18:23:50,635 INFO adapres.full: [PASS] Step 2 binding sanity: fp32 mAP50-95 valid 26.879
+2026-11-20 18:23:50,636 INFO adapres.full: [PASS] Step 2 binding sanity: fp16 mAP50-95 valid 26.874
+2026-11-20 18:23:50,636 INFO adapres.full: [PASS] Step 2 binding sanity: int8 mAP50-95 valid 26.04
+2026-11-20 18:23:50,637 INFO adapres.full: [PASS] Step 2 binding sanity: FP16 vs FP32 (TRT) |diff| -0.005
+2026-11-20 18:23:50,638 INFO adapres.full: [PASS] Step 2 binding sanity: INT8 - FP16 -0.834
+2026-11-20 18:23:50,639 INFO adapres.full: [PASS] rebuilt fp32 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices) {'all': 1.315462372364351e-06, 'crowded': 6.017764664356662e-06, 'easy': 5.2962002838885525e-06, 'night': 1.9447589233445584e-06, 'scene_change_natural': 0.0}
+2026-11-20 18:23:50,640 INFO adapres.full: [PASS] rebuilt fp16 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices) {'all': 0.023827354769323517, 'crowded': 0.05296139238460951, 'easy': 0.04583217535596984, 'night': 0.003125539314424719, 'scene_change_natural': 0.08282301690391569}
+2026-11-20 18:23:50,640 INFO adapres.full: [PASS] rebuilt int8 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices) {'all': 0.06418097261792766, 'crowded': 0.2131673575581028, 'easy': 0.139502341161174, 'night': 0.08738740837782866, 'scene_change_natural': 0.0009449961792168393}
+2026-11-20 18:23:56,752 INFO adapres.eval_fixed: prepared: {'sequences': ['b1c9c847-3bda4659', 'b1d0091f-f2c2d2ae', 'b1d10d08-ec660956', 'b1d968b9-563405f4', 'b1e1a7b8-0aec80e8', 'b1ee702d-4a193906', 'b1f4491b-16256d7c', 'b1f4491b-9958bd99', 'b205eb4d-f84aaa1a', 'b20e291a-32ac11c1', 'b20eae11-18cd8ca2', 'b216243d-55963da2', 'b2169b74-fa197951', 'b21c86ac-0dc77d82', 'b21c86ac-2eb7ba16', 'b21c86ac-71205084', 'b2208b0f-2796a692', 'b23adb0d-72704b27', 'b23b2649-6af03cd5', 'b251b746-00138418'], 'n_frames': 3950, 'n_images': 3950, 'n_annotations': 55474, 'matches_step1_report': True, 'slice_sizes': {'all': 3950, 'easy': 1486, 'crowded': 417, 'night': 924, 'scene_change_natural': 6}}
+2026-11-20 18:23:56,756 INFO adapres.controller_dev: cache root: /kaggle/working/work02/cache/yolo11s
+2026-11-20 18:26:51,607 INFO adapres.controller_dev: per-level matching done in 136s
+2026-11-20 18:30:57,405 INFO adapres.full: [PASS] fixed_fp16: composed eval == notebook 02 (all slices) {'all': 0.0, 'easy': 0.0, 'crowded': 0.0, 'night': 0.0, 'scene_change_natural': 0.0}
+2026-11-20 18:30:57,406 INFO adapres.full: [PASS] fixed_int8: composed eval == notebook 02 (all slices) {'all': 0.0, 'easy': 0.0, 'crowded': 0.0, 'night': 0.0, 'scene_change_natural': 0.0}
+2026-11-20 18:30:57,407 INFO adapres.full: [PASS] oracle_cheap: composed eval == notebook 02 (all slices) {'all': 0.0, 'easy': 0.0, 'crowded': 0.0, 'night': 0.0, 'scene_change_natural': 0.0}
+2026-11-20 18:30:57,408 INFO adapres.full: [PASS] random_matched: INT8 fraction matches adaptive (|diff| <= 0.05) {'adaptive': 0.5058227848101265, 'random_matched': 0.4974430379746836}
+2026-11-20 18:30:57,409 INFO adapres.full: [PASS] random_matched: switch rate matches adaptive (within 25% relative or 1/100) {'adaptive': 3.4683544303797467, 'random_matched': 3.5443037974683547}
+2026-11-20 18:32:16,765 INFO adapres.full: stage A: 32376 configs in 79s
+2026-11-20 19:05:46,132 INFO adapres.full: [PASS] lock main written and hash-verified 
+2026-11-20 19:05:46,133 INFO adapres.full: [PASS] lock delta0.25 written and hash-verified 
+2026-11-20 19:05:46,134 INFO adapres.full: [PASS] lock delta0.5 written and hash-verified 
+2026-11-20 19:05:46,135 INFO adapres.full: [PASS] lock delta1.0 written and hash-verified 
+2026-11-20 19:05:46,136 INFO adapres.full: [PASS] lock delta2.0 written and hash-verified 
+2026-11-20 19:05:46,136 INFO adapres.full: [PASS] lock abl_A-m written and hash-verified 
+2026-11-20 19:05:46,137 INFO adapres.full: [PASS] lock abl_S-m written and hash-verified 
+2026-11-20 19:05:46,138 INFO adapres.full: [PASS] lock abl_A-c written and hash-verified 
+2026-11-20 19:05:46,139 INFO adapres.full: [PASS] lock abl_S-c written and hash-verified 
+2026-11-20 19:05:46,140 INFO adapres.full: [PASS] lock abl_A-n written and hash-verified 
+2026-11-20 19:05:46,141 INFO adapres.full: [PASS] lock abl_S-n written and hash-verified 
+2026-11-20 19:05:46,141 INFO adapres.full: [PASS] lock abl_A-u written and hash-verified 
+2026-11-20 19:05:46,142 INFO adapres.full: [PASS] lock abl_S-u written and hash-verified 
+2026-11-20 19:05:46,143 INFO adapres.full: [PASS] lock abl_A-s written and hash-verified 
+2026-11-20 19:05:46,143 INFO adapres.full: [PASS] lock abl_S-s written and hash-verified 
+2026-11-20 19:05:46,144 INFO adapres.full: [PASS] lock abl_A-hyst written and hash-verified 
+2026-11-20 19:05:46,144 INFO adapres.full: [PASS] lock abl_A-sc-override written and hash-verified 
+2026-11-20 19:05:46,145 INFO adapres.full: [PASS] lock abl_A-asym written and hash-verified 
+2026-11-20 19:05:46,145 INFO adapres.full: [PASS] lock abl_A-ema written and hash-verified 
+2026-11-20 19:05:46,146 INFO adapres.full: [PASS] lock ksweep1 written and hash-verified 
+2026-11-20 19:05:46,146 INFO adapres.full: [PASS] lock ksweep2 written and hash-verified 
+2026-11-20 19:05:46,147 INFO adapres.full: [PASS] lock ksweep3 written and hash-verified 
+2026-11-20 19:05:46,148 INFO adapres.full: [PASS] lock ksweep5 written and hash-verified 
+2026-11-20 19:05:46,148 INFO adapres.full: [PASS] lock ksweep8 written and hash-verified 
+2026-11-20 19:05:46,149 INFO adapres.full: [PASS] main config feasible on calib (mAP >= FP16 - delta) feasible
+2026-11-20 19:21:24,993 INFO adapres.full: [PASS] test cache complete (cues + 3 levels for every test frame) 7796
+2026-11-20 19:21:24,994 INFO adapres.full: [PASS] test and calib clip sets are disjoint 
+2026-11-20 19:21:24,994 INFO adapres.full: [PASS] locked main config hash verified before reading test 16a1faf1ab9b3c939b65c5d3410d219ae3aec1a812b53861519c0c331708e95b
+2026-11-20 19:21:24,996 INFO adapres.full: [PASS] spliced streams available for the scene-change slice 20
+2026-11-20 19:22:06,750 INFO adapres.full: repeat 0: idle 30.65 W; order ['fixed_fp32', 'adaptive_sequential', 'adaptive_pipelined', 'fixed_fp16', 'fixed_int8']
+2026-11-20 19:24:04,888 INFO adapres.full:   fixed_fp32             N= 5474    91.2 fps  E_dyn/frame=384.81 mJ  lat med 10.95 ms
+2026-11-20 19:26:25,096 INFO adapres.full:   adaptive_sequential    N= 6747   112.4 fps  E_dyn/frame=96.34 mJ  lat med 8.83 ms
+2026-11-20 19:28:29,201 INFO adapres.full:   adaptive_pipelined     N=10495   174.9 fps  E_dyn/frame=190.92 mJ  lat med 5.54 ms
+2026-11-20 19:30:25,302 INFO adapres.full:   fixed_fp16             N=10294   171.5 fps  E_dyn/frame=215.21 mJ  lat med 5.79 ms
+2026-11-20 19:32:17,389 INFO adapres.full:   fixed_int8             N=11840   197.3 fps  E_dyn/frame=177.14 mJ  lat med 5.03 ms
+2026-11-20 19:32:47,398 INFO adapres.full: repeat 1: idle 32.48 W; order ['fixed_fp16', 'fixed_fp32', 'fixed_int8', 'adaptive_pipelined', 'adaptive_sequential']
+2026-11-20 19:34:27,472 INFO adapres.full:   fixed_fp16             N=10340   172.3 fps  E_dyn/frame=203.76 mJ  lat med 5.76 ms
+2026-11-20 19:36:07,573 INFO adapres.full:   fixed_fp32             N= 5443    90.7 fps  E_dyn/frame=364.79 mJ  lat med 11.02 ms
+2026-11-20 19:37:55,652 INFO adapres.full:   fixed_int8             N=11802   196.7 fps  E_dyn/frame=166.67 mJ  lat med 5.04 ms
+2026-11-20 19:39:37,737 INFO adapres.full:   adaptive_pipelined     N=10502   175.0 fps  E_dyn/frame=177.79 mJ  lat med 5.55 ms
+2026-11-20 19:41:57,965 INFO adapres.full:   adaptive_sequential    N= 6727   112.1 fps  E_dyn/frame=78.98 mJ  lat med 8.85 ms
+2026-11-20 19:42:27,973 INFO adapres.full: repeat 2: idle 33.23 W; order ['fixed_fp16', 'adaptive_pipelined', 'fixed_fp32', 'fixed_int8', 'adaptive_sequential']
+2026-11-20 19:44:34,097 INFO adapres.full:   fixed_fp16             N=10311   171.8 fps  E_dyn/frame=199.1 mJ  lat med 5.78 ms
+2026-11-20 19:46:46,235 INFO adapres.full:   adaptive_pipelined     N=10580   176.3 fps  E_dyn/frame=172.67 mJ  lat med 5.52 ms
+2026-11-20 19:48:26,354 INFO adapres.full:   fixed_fp32             N= 5440    90.6 fps  E_dyn/frame=357.65 mJ  lat med 11.03 ms
+2026-11-20 19:50:06,422 INFO adapres.full:   fixed_int8             N=11824   197.0 fps  E_dyn/frame=164.11 mJ  lat med 5.03 ms
+2026-11-20 19:52:26,589 INFO adapres.full:   adaptive_sequential    N= 6693   111.5 fps  E_dyn/frame=71.45 mJ  lat med 8.90 ms
+2026-11-20 19:53:46,333 INFO adapres.full: [PASS] protocol measured fixed_fp32 
+2026-11-20 19:53:46,334 INFO adapres.full: [PASS] protocol measured fixed_fp16 
+2026-11-20 19:53:46,334 INFO adapres.full: [PASS] protocol measured fixed_int8 
+2026-11-20 19:53:46,335 INFO adapres.full: [PASS] protocol measured adaptive_sequential 
+2026-11-20 19:53:46,336 INFO adapres.full: [PASS] protocol measured adaptive_pipelined 
+2026-11-20 19:53:46,336 INFO adapres.full: [PASS] energy method recorded nvml_energy_counter
+2026-11-20 19:53:46,338 INFO adapres.full: [PASS] live vs replay level agreement >= 0.9 1.0
+2026-11-20 19:53:46,338 INFO adapres.full: [PASS] live vs replay |mAP50-95 diff| <= 0.5 pts {'map50_95': 0.0, 'map50': 0.0}
+2026-11-20 20:00:40,410 INFO adapres.full: test matching done in 413s
+2026-11-20 22:24:05,285 INFO adapres.full: bootstrap 1000 resamples in 7606s
+2026-11-20 22:24:05,807 INFO adapres.full: [PASS] locked main: reference replay == fast replay (identical decisions) 
+2026-11-20 22:24:05,808 INFO adapres.full: [PASS] every policy evaluated on all test frames 
+2026-11-20 22:24:05,809 INFO adapres.full: [PASS] bootstrap ran (1000 resamples) 

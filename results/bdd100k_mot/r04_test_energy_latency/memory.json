@@ -1,0 +1,19 @@
+{
+  "adaptive_set": [
+    "int8",
+    "fp16"
+  ],
+  "adaptive_set_delta_mib": 140.0,
+  "alone_delta_mib": {
+    "fp16": 76.0,
+    "fp32": 124.0,
+    "int8": 66.0
+  },
+  "baseline_mib": 731.1875,
+  "engine_file_MB": {
+    "fp16": 21.126901,
+    "fp32": 41.741263,
+    "int8": 13.473453
+  },
+  "host_maxrss_MB": 5729.0
+}

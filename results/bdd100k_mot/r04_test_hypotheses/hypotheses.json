@@ -1,0 +1,65 @@
+{
+  "H1": {
+    "delta_pts": 0.5,
+    "map_drop_pts": 0.8950603614213626,
+    "map_within_delta": false,
+    "measured": {
+      "pipelined": {
+        "E_dyn_mJ_per_frame": 177.79383111777557,
+        "fp16_E_dyn_mJ_per_frame": 203.7617213748147,
+        "fp16_latency_median_ms": 5.784675000541029,
+        "latency_median_ms": 5.544517999624077,
+        "lower_energy": true,
+        "lower_latency": true
+      },
+      "sequential": {
+        "E_dyn_mJ_per_frame": 78.98263183369386,
+        "fp16_E_dyn_mJ_per_frame": 203.7617213748147,
+        "fp16_latency_median_ms": 5.784675000541029,
+        "latency_median_ms": 8.849057999213983,
+        "lower_energy": true,
+        "lower_latency": false
+      }
+    },
+    "supported_pipelined": false,
+    "supported_sequential": false
+  },
+  "H2": {
+    "diff_ci95_pts": [
+      -0.7019627949452903,
+      0.2701042671782406
+    ],
+    "matched_frac_int8": {
+      "adaptive": 0.9647255002565418,
+      "random_matched": 0.9646741918932786
+    },
+    "matched_switch_rate": {
+      "adaptive": 1.4751154438173422,
+      "random_matched": 1.4507439712673165
+    },
+    "supported": false
+  },
+  "H3": {
+    "K_main": 1,
+    "map_change_pts": 0.0,
+    "supported": false,
+    "switch_rate_K1": 1.4751154438173422,
+    "switch_rate_main": 1.4751154438173422
+  },
+  "H4": {
+    "fp16_more_often_than_easy": {
+      "crowded": true,
+      "night": true,
+      "scene_change": true
+    },
+    "frac_fp16_by_slice": {
+      "crowded": 0.20833333333333334,
+      "easy": 0.011195001301744337,
+      "night": 0.01568627450980392,
+      "scene_change": 0.7875
+    },
+    "saving_share_from_easy": 0.4888052124227359,
+    "supported": false
+  },
+  "note": "computed mechanically from test results; H5 (contention) not run (out of scope)"
+}

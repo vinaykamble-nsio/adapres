@@ -1,0 +1,50 @@
+{
+  "all_pass": true,
+  "checks": [
+    {
+      "binding": true,
+      "check": "fp32 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 26.879
+    },
+    {
+      "binding": true,
+      "check": "fp16 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 26.874
+    },
+    {
+      "binding": true,
+      "check": "int8 mAP50-95 valid",
+      "pass": true,
+      "rule": ">= 0 (not -1: GT categories present)",
+      "value_pts": 26.04
+    },
+    {
+      "binding": true,
+      "check": "FP16 vs FP32 (TRT) |diff|",
+      "pass": true,
+      "rule": "|diff| <= 0.5 pts",
+      "value_pts": -0.005
+    },
+    {
+      "binding": true,
+      "check": "INT8 - FP16",
+      "pass": true,
+      "rule": "-3.0 <= diff <= +0.5 pts (slightly lower)",
+      "value_pts": -0.834
+    }
+  ],
+  "map50_95_pts": {
+    "fp16": 26.87407932559894,
+    "fp32": 26.878767783316913,
+    "int8": 26.040405309940812
+  },
+  "map50_pts": {
+    "fp16": 40.72836519593298,
+    "fp32": 40.73143023046835,
+    "int8": 40.06317704698101
+  }
+}

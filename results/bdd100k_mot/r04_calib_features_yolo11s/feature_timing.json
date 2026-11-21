@@ -1,0 +1,15 @@
+{
+  "featurize_ms": {
+    "mean": 2.8099713048077666,
+    "median": 2.6695980000113195,
+    "n": 3950,
+    "p95": 4.373875850137664
+  },
+  "image_read_ms": {
+    "mean": 6.344932992658386,
+    "median": 6.360382999901049,
+    "n": 3950,
+    "p95": 7.774120500084791
+  },
+  "note": "CPU, Kaggle notebook; features only (decode reported separately)"
+}
