@@ -21,8 +21,8 @@
   "env": {
     "cuda_visible_devices": null,
     "git": {
-      "commit": "facaaef6bb2a1966c86a85b27afd2a6c75e329ad",
-      "dirty": true,
+      "commit": "acb7c662bf3a6e668c73eb1988331f8a72ef12cc",
+      "dirty": false,
       "source": "git"
     },
     "nvidia_smi": {
@@ -45,6 +45,7 @@
       "pycocotools": "2.0.11",
       "tensorrt": null,
       "tensorrt-cu12": null,
+      "tensorrt-cu13": null,
       "torch": null,
       "torchvision": null,
       "ultralytics": null
@@ -52,14 +53,14 @@
     "platform": "local",
     "python": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]",
     "seed": 2027,
-    "timestamp_utc": "2026-11-21T16:24:49.942094+00:00",
+    "timestamp_utc": "2026-11-21T16:41:06.605670+00:00",
     "torch_cuda": {
       "error": "ModuleNotFoundError(\"No module named 'torch'\", name='torch')"
     }
   },
   "exp_id": "r04_test_hypotheses_v2",
-  "git_commit": "facaaef6bb2a1966c86a85b27afd2a6c75e329ad",
-  "git_dirty": true,
+  "git_commit": "acb7c662bf3a6e668c73eb1988331f8a72ef12cc",
+  "git_dirty": false,
   "hypotheses_revision": 2,
   "mode": "derived (local recompute from results/, no new data)",
   "notes": "DEVIATIONS.md V1-V3: E_total primary; H3 on K-sweep (sensitivity); H4 engine-only saving",
@@ -68,5 +69,5 @@
   "smoke": false,
   "split": "test",
   "supersedes": "r04_test_hypotheses (revision 1)",
-  "timestamp_utc": "2026-11-21T16:24:49.942094+00:00"
+  "timestamp_utc": "2026-11-21T16:41:06.605670+00:00"
 }
