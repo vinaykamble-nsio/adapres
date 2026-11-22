@@ -55,5 +55,14 @@ def r04_commit(results: Path = RESULTS, idx: dict | None = None) -> str:
     return commits.pop()
 
 
+def prefix_commit(prefix: str, results: Path = RESULTS, idx: dict | None = None) -> str:
+    """Single git commit shared by every run whose exp_id starts with `prefix` (raises otherwise)."""
+    idx = idx or index(results)
+    commits = {r["git_commit"] for k, r in idx.items() if k.startswith(prefix)}
+    if len(commits) != 1:
+        raise ResultsError(f"{prefix} runs come from {len(commits)} commits: {commits}")
+    return commits.pop()
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()

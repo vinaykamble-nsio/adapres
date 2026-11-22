@@ -24,6 +24,9 @@ other GPUs, quantisation-aware training, or adaptive inference in general.
   - *If P1 fails:* "even a learned estimator using causal cues does not place INT8 better than
     chance at a fixed budget." The paper is then a bounded negative result.
 
+- **Outcome (2026-11-22):** P1 failed (−0.03 pts, CI [−0.49, +0.38]), so the paper uses the
+  pre-written "P1 fails" wording. That is a bounded negative result for both controllers.
+
 ## 2. "The controller collapses to INT8"
 - **State the cause, not just the symptom.** Maximising the saving within δ, with a constant cue
   cost, made the objective equivalent to "most INT8 within δ". The locked weights (motion 0.25,

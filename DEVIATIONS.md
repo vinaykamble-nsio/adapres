@@ -116,6 +116,21 @@ reported, and nothing was re-run.
   computing features, so live and cached detections give identical decisions. A local dry-run found
   72% live-vs-replay agreement without this, and 100% with it.
 - The claims, with v2 wording fixed for both outcomes, are in `CLAIMS.md`.
+- **Outcome (notebook 05, commit `2f0c780`, full run, all gates passed):**
+  - **P1 not supported**: v2 − matched random at the 50% budget = −0.03 pts, CI [−0.49, +0.38].
+  - **P2, P3 and P5 not supported** either.
+  - Source: `results/bdd100k_mot/r05_test_v2_hypotheses/`.
+- **Notes for reporting v2:**
+  - Realised test INT8 shares were below the calib budgets (0.18 / 0.41 / 0.60 for 25 / 50 / 75%).
+    Matched random is matched to the realised share, so P1 compares equal costs.
+  - v1@budget and the lagged oracle realised different shares from v2, so **P3 is not an equal-cost
+    comparison**.
+  - The rebuilt INT8 engine differed from Step 2 by 0.41 pts of calib mAP. That is inside the 0.5 gate,
+    but larger than r04's 0.21: TensorRT INT8 calibration varies between builds.
+  - The v2 evaluation did not score the spliced scene-change streams, so that slice is reported only
+    for r04.
+  - v2's latency was dominated by its controller step (feature statistics plus model prediction,
+    2.29 ms per frame, on the critical path even with pipelined cues).
 
 ## D. Provenance (clean commits)
 

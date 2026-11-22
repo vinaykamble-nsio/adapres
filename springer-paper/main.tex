@@ -1,0 +1,191 @@
+%% AdaPres manuscript -- Springer Nature sn-jnl template (v3.1).
+%% Every result is a macro from numbers.tex / numbers_v2.tex, generated from results/ by
+%% paper/make_numbers.py and paper/make_v2.py. Tables in tables/ and figures in figs/ are generated
+%% too (scripts/build_springer.py copies them here). Do not type results by hand.
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{newunicodechar}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{…}{\ldots}
+\newunicodechar{§}{\S}
+\raggedbottom
+
+\input{numbers.tex}
+\input{numbers_v2.tex}
+
+\begin{document}
+
+\title[Content-aware INT8/FP16 switching: a pre-registered negative result]{Does Content-Aware Precision Switching Pay Off for Real-Time Object Detection? A Pre-Registered Negative Result on Driving Video}
+
+%% Corresponding author not yet designated (author.md: ask, do not invent). Mark with \author* once confirmed.
+\author[1]{\fnm{Vinay} \sur{Kamble}}\email{vinaykamble289@gmail.com}
+\author[1]{\fnm{Aisshwarya} \sur{Gurav}}\email{aisshwaryagurav@gmail.com}
+\author[1]{\fnm{Shrejal} \sur{Bhosale}}\email{bhosaleshrejal@gmail.com}
+
+\affil[1]{\orgdiv{Department of Computer Science and Engineering (Artificial Intelligence and Machine Learning)}, \orgname{KIT's College of Engineering}, \orgaddress{\city{Kolhapur}, \state{Maharashtra}, \country{India}}}
+
+\abstract{Running a detector at reduced numerical precision on frames that tolerate it, and at full precision elsewhere, promises most of the speed and energy of INT8 inference with the accuracy of FP16, provided a controller can tell the frames apart. We test this premise for YOLO11s on BDD100K MOT driving video on one NVIDIA T4 with TensorRT, under a protocol that fixed hypotheses, calibration on held-out clips and a one-shot test evaluation in advance. A content-cue controller (motion, clutter, detection count, confidence, scene change), calibrated and locked on calibration clips, lost \DropAdaptiveVsFPsixteen{} points of mAP@0.5:0.95 against FP16 and could not be distinguished from fixed INT8 or from switching at random with the same INT8 share. A pre-registered follow-up with a learned per-frame risk estimator under fixed INT8 budgets also failed to beat matched random placement (difference $\DiffPOneMean$ points, 95\% CI $[\DiffPOneCILo, \DiffPOneCIHi]$), although a ground-truth oracle shows \VHeadroomFiftyPts{} points of headroom at a 50\% budget. Switching between engines is cheap, but deciding is not: the controller's CPU work made adaptive inference slower than FP16 (\VLatVTwoPipe{} vs \VLatFPsixteen{} ms per frame). On this setup, fixed INT8 is the better choice: \VDropINTeightPts{} points lower mAP, with \VINTeightLatRedPct\% lower latency and \VINTeightETotalRedPct\% lower GPU board energy per frame than FP16.}
+
+\keywords{Mixed-precision inference, INT8 quantization, adaptive inference, video object detection, energy measurement, negative result, pre-registration}
+
+\maketitle
+
+%% =====================================================================================
+\section{Introduction}\label{sec:intro}
+
+Post-training INT8 quantization makes convolutional detectors faster and cheaper to run on GPUs with integer tensor cores~\cite{jacob2018quantization,nagel2021whitepaper}, at the price of a small, but not uniform, loss of accuracy. If that loss were concentrated in identifiable frames, such as crowded scenes, night driving or scene cuts, a controller could run INT8 on the remaining frames and FP16 on the difficult ones, keeping FP16 accuracy at close to INT8 cost. This idea is close to adaptive configuration in video analytics~\cite{jiang2018chameleon,chin2019adascale,xu2020approxdet} and to input-dependent precision~\cite{liu2022dqnet,sun2021videoiq}, but it operates on the cheapest possible knob: two pre-built engines of the same network, switched per frame.
+
+We asked whether this works in a realistic setting and evaluated it in a way that makes a negative answer credible. Hypotheses, the accuracy tolerance $\delta = \DeltaPts$ points, the calibration procedure and the statistical tests were fixed before any test data were seen. Every threshold and weight was fit on calibration clips, and the test clips were scored once per locked configuration. When a review pointed out that the first controller collapsed to near-constant INT8, we pre-registered a second controller and its tests in an addendum before running it.
+
+The answer is negative on this setup, and we report it as such. Our contributions are:
+\begin{itemize}
+\item A pre-registered, replay-plus-live evaluation protocol for per-frame precision switching. It includes a cost-matched random baseline, a ground-truth oracle as an upper bound, cluster-bootstrap confidence intervals over clips, and live measurements of latency and GPU board energy.
+\item Evidence that neither a hand-weighted content-cue controller nor a learned per-frame risk estimator places INT8 frames better than chance on BDD100K MOT driving video, even though an oracle shows that headroom exists.
+\item A cost decomposition showing that switching between resident engines is nearly free, while the controller's own CPU work exceeds the INT8 saving, which makes adaptive inference slower than fixed FP16.
+\item Code, locked configurations with hashes, and every result file needed to reproduce the tables and figures.
+\end{itemize}
+
+%% =====================================================================================
+\section{Related work}\label{sec:related}
+
+\paragraph{Quantization.} Integer-only inference~\cite{jacob2018quantization} and post-training quantization~\cite{nagel2021whitepaper} make INT8 detectors practical, and TensorRT builds INT8 and FP16 engines from a trained network~\cite{nvidia_tensorrt_docs}. Mixed-precision methods such as HAQ~\cite{wang2019haq} choose bit-widths per layer offline, whereas we switch the precision of the whole network per frame at run time.
+
+\paragraph{Input-adaptive precision.} AdaBits~\cite{jin2020adabits} trains one network whose bit-width can be switched at deployment but does not decide when to switch. DQNet~\cite{liu2022dqnet} trains a bit-controller with the network to pick per-layer bit-widths for each image, and VideoIQ~\cite{sun2021videoiq} trains a policy that selects the precision of each video frame for action recognition. These methods learn the policy together with the model and report gains. We study the post-hoc setting that deployment toolchains offer: two fixed post-training engines and a controller that is added afterwards. There, our results show no gain over random placement.
+
+\paragraph{Adaptive video analytics and detection.} Chameleon~\cite{jiang2018chameleon} re-profiles resolution, frame rate and model per video segment and stresses that profiling itself is costly. AdaScale~\cite{chin2019adascale} picks the input scale per frame with a learned regressor and improves both speed and accuracy. ApproxDet~\cite{xu2020approxdet} selects approximate detection configurations from content and resource contention, and LiteReconfig~\cite{xu2022litereconfig} adds a cost--benefit analysis of which content features are worth computing, accounting for switching overhead. Remix~\cite{jiang2021remix} allocates detectors of different sizes to regions of high-resolution frames under a latency budget, and DynamicDet~\cite{lin2023dynamicdet} routes easy images through a cheaper path of a cascaded YOLO detector. Our controller is closest to ApproxDet, and our cost finding matches the motivation of LiteReconfig: on a T4 the features needed to decide cost more than INT8 saves.
+
+%% =====================================================================================
+\section{Method}\label{sec:method}
+
+\subsection{Precision levels and replay}
+The detector is run as TensorRT engines at FP32, FP16 and INT8; INT8 is calibrated on calibration frames only. The adaptive controllers choose between INT8 and FP16 for every frame; FP32 is a reference. Each engine is run once on every frame and its detections and timings are cached. A policy is then evaluated by replaying it causally on the cache: the decision for frame $t$ uses the image of frames $t$ and $t-1$ and the detections of the engine actually used at $t-1$. The same controller code drives the live system, and live runs reproduced the replayed decisions exactly (Section~\ref{sec:energy}).
+
+\subsection{Controller v1: content cues (pre-registered primary)}
+For frame $t$ the controller computes motion $m_t$ (mean absolute grey-level difference to $t-1$), clutter $c_t$ (fraction of Canny edge pixels), the previous detection count $n_t$, the previous mean confidence through $u_t = 1-\overline{s}$, and a binary scene-change cue $s_t = [d_t \geq \theta_{sc}]$, where $d_t$ is the Bhattacharyya distance between HSV histograms of consecutive frames. Continuous cues are normalised with 5th and 95th percentiles from the calibration clips. The score
+\begin{equation}
+S_t = w_m \tilde m_t + w_c \tilde c_t + w_n \tilde n_t + w_u \tilde u_t + w_s s_t, \qquad \hat S_t = \alpha S_t + (1-\alpha)\hat S_{t-1}
+\end{equation}
+proposes INT8 when $\hat S_t < \theta$ and FP16 otherwise. A proposal must persist for $K$ frames before the level switches. A scene change forces FP16 immediately and holds it for three more frames.
+
+\paragraph{Calibration and locking.} On the calibration clips, we maximise the replay latency saving relative to FP16 subject to $\mathrm{mAP}(\text{policy}) \geq \mathrm{mAP}(\text{FP16}) - \delta$, over $\theta$ (score quantiles), $K$, $\alpha$, $\theta_{sc}$ and 71 weight vectors (\CalibConfigs{} configurations). A per-frame F1 proxy screens the configurations and exact mAP decides among the best ones. The chosen configuration, its ablations and a persistence sweep are written to files whose SHA-256 is verified before the test clips are read.
+
+\subsection{Controller v2: learned risk under a fixed budget (pre-registered follow-up)}
+v1 collapsed to near-constant INT8 (Section~\ref{sec:results}). The cause was the objective: with a constant controller cost, maximising the saving within $\delta$ is the same as maximising the INT8 share, so the controller never had to choose \emph{which} frames receive INT8.
+
+v2 therefore fixes the INT8 share (budgets of 25\%, 50\% and 75\%) and learns where to spend it. A gradient-boosted regression model predicts the per-frame gain $g_t = \mathrm{F1}_{\text{FP16}}(t) - \mathrm{F1}_{\text{INT8}}(t)$ from causal features: $m_t$, $c_t$, $d_t$ and statistics of the previous frame's detections (count, mean and minimum confidence, share of low-confidence and near-threshold detections, share of small boxes, mean log box area, class entropy and the change in count). Model selection uses clip-grouped cross-validation on calibration clips. Thresholds that meet each budget are set by bisection on a cross-fitted, closed-loop replay of the calibration clips, and $K$ is chosen per budget by calibration mAP. The complete design, including the primary test P1 (v2 better than matched random at 50\%), was frozen in a hashed addendum before the run.
+
+\subsection{Baselines and references}
+\emph{Fixed} FP32, FP16 and INT8 run one engine throughout. \emph{Matched random} switching is a Markov chain over the two levels whose transition probabilities are estimated from the adaptive policy's own test log. It therefore has the same INT8 share and switch rate, and differs only in where the INT8 frames fall (10 seeds). \emph{v1 at budget} re-thresholds v1 on calibration clips to each v2 budget. The \emph{oracle} uses ground truth: at each budget it gives INT8 to the frames with the smallest $g_t$. It is an upper bound under the per-frame F1 adequacy rule, not an achievable method, and per-frame F1 optimisation is not guaranteed to be mAP-optimal. The \emph{lagged oracle} uses $g_{t-1}$, ground truth one frame late. It is also not deployable, and shows how much of the headroom is predictable from the immediate past.
+
+\subsection{Statistics}
+We report mAP@0.5:0.95 and mAP@0.5 from pycocotools on single-label detector outputs. Ignore classes and crowd boxes are scored as \texttt{iscrowd} regions. Uncertainty is a paired cluster bootstrap over clips (\BootResamples{} resamples) for each policy and for each pre-registered difference~\cite{efron1994bootstrap,cameron2008bootstrap}. Per-image matching makes the mAP of any per-frame selection a function of per-level matching results, which keeps replay and bootstrap evaluation exact and fast.
+
+%% =====================================================================================
+\section{Experimental setup}\label{sec:setup}
+\paragraph{Data.} We use BDD100K MOT~\cite{yu2020bdd100k} (5\,fps, dense boxes with track IDs). Only validation-split images were available, so we drew \CalibClips{} calibration clips and \TestClips{} test clips from the official validation split as disjoint, seeded sets, stratified by day and night (median-frame luminance). The test set has \TestFrames{} frames. COCO classes are mapped to seven evaluated classes (person, car, truck, bus, train, motorcycle, bicycle); rider is merged into person. Slices are defined on calibration clips: \emph{night} (luminance threshold), \emph{crowded} (90th percentile of ground-truth count), \emph{easy} (neither, and at most the median count) and \emph{scene change}. The scene-change slice comes from 20 synthetic streams that splice test clips together (\SceneChangeFrames{} frames after cuts), so it is synthetic by construction.
+
+\paragraph{Model and hardware.} We use YOLO11s~\cite{jocher2024yolo11} with COCO~\cite{lin2014coco} weights at $640 \times 640$, exported to TensorRT~\cite{nvidia_tensorrt_docs} FP32, FP16 and INT8 engines (INT8 calibrated on 500 calibration frames), on one NVIDIA T4 on Kaggle. The absolute mAP is low because of the domain shift from COCO to BDD100K; all claims concern differences between policies on identical detections.
+
+\paragraph{Live measurements.} Frames are pre-decoded. Each configuration runs after a warm-up, an idle baseline and at least 60\,s windows, in three interleaved repeats. Latency is wall time per frame with GPU synchronisation. Energy is the change in the NVML board energy counter~\cite{nvidia_nvml_api}, read over long windows because the on-board sensor averages and may sample only part of the runtime~\cite{yang2024gpupower}; we report it with hardware and configuration metadata~\cite{henderson2020energy}. We report $E_{\text{total}} = \Delta E/N$ as primary and the idle-subtracted $E_{\text{dyn}}$ as secondary: idle subtraction favours configurations that leave the GPU waiting on the CPU. That choice was made after seeing the first results and is reported as a deviation.
+
+%% =====================================================================================
+\section{Results}\label{sec:results}
+
+\subsection{Fixed precisions}
+On the test clips INT8 is \DropINTeightVsFPsixteen{} points below FP16 in mAP@0.5:0.95 (\MapFixedINTeight{} vs \MapFixedFPsixteen{}), and FP32 matches FP16 (Table~\ref{tab:test-main}). Measured live, INT8 is \INTeightLatRedPct\% faster than FP16 and uses \INTeightETotalRedPct\% less board energy per frame (\LatINTeight{} vs \LatFPsixteen{} ms; \ETotalINTeight{} vs \ETotalFPsixteen{} mJ; Table~\ref{tab:energy}).
+
+\input{tables/test_main.tex}
+
+\subsection{Controller v1 (pre-registered primary result)}
+The locked v1 controller used INT8 on \FracINTeightAdaptive{} of test frames and scored \MapAdaptive{}, \DropAdaptiveVsFPsixteen{} points below FP16. That is outside $\delta$, so H1 is \HOneResult{}. It was indistinguishable from matched random switching (difference $\DiffAdaptiveRandomMatchedMean$, 95\% CI $[\DiffAdaptiveRandomMatchedCILo, \DiffAdaptiveRandomMatchedCIHi]$; H2 \HTwoResult) and from fixed INT8 (Table~\ref{tab:hypotheses}).
+
+On calibration the locked configuration was \CalibDropMain{} points below FP16, just inside $\delta$. Choosing the largest saving at the tolerance boundary did not hold on test. The locked weights put zero weight on clutter and uncertainty; the controller mainly switched to FP16 at scene changes. On the synthetic scene-change slice it scored \MapAdaptiveSceneChange{} against \MapFixedINTeightSceneChange{} for fixed INT8 and \MapRandomMatchedSceneChange{} for matched random, but its histogram cue is correlated with the splices by construction. At night it ran INT8 on almost every frame although INT8 loses \MapFixedFPsixteenNight{}$\to$\MapFixedINTeightNight{} points there, which contradicts the premise of H4 that night frames need FP16; H4's mechanical criterion passed only narrowly. Persistence behaved as expected in a sensitivity analysis: raising $K$ from 1 to 8 reduced switching from \SwitchRateKOne{} to \SwitchRateKEight{} per 100 frames without loss (H3 \HThreeResult).
+
+\input{tables/hypotheses.tex}
+
+\subsection{Controller v2 (pre-registered follow-up)}
+On calibration clips the risk model's held-out rank correlation with the true per-frame gain was only \VSpearman. On test, v2 did not beat matched random placement at any budget (Fig.~\ref{fig:v2budgets}, Tables~\ref{tab:v2-budgets} and~\ref{tab:v2-pairs}). At the primary 50\% budget, v2 scored \MapVTwoFifty{} against \MapRandomFifty{} $\pm$ \MapRandomSDFifty{} for matched random (P1 \VPOneResult; difference $\DiffPOneMean$, CI $[\DiffPOneCILo, \DiffPOneCIHi]$).
+
+The oracle at the same budget reached \MapOracleFifty, above FP16, so \VHeadroomFiftyPts{} points of headroom exist. v2 captured none of it (\CapturedFiftyPct\% of the gap between random and oracle). Even the lagged oracle, which sees ground truth one frame late, gained little over random. Per-frame difficulty is therefore only weakly predictable from the recent past, and our causal cues do not capture it. The realised INT8 shares on test fell below the calibration budgets (\FracVTwoFifty{} at the 50\% budget) because the risk distribution shifted between clip sets. Matched random is matched to the realised share, so P1 compares equal costs. v1 and the lagged oracle realised different shares, so P3 (v2 vs v1, \DiffPThreeMean{} points, CI $[\DiffPThreeCILo, \DiffPThreeCIHi]$) is not an equal-cost comparison.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figs/v2_budgets.pdf}
+\caption{Test mAP@0.5:0.95 against the realised INT8 share for the three v2 budgets, with matched random (mean $\pm$ SD over 10 seeds), v1 re-thresholded to each budget, the lagged oracle and the oracle (both use ground truth). Fixed FP16 and INT8 sit at shares 0 and 1. v2 and matched random overlap.}\label{fig:v2budgets}
+\end{figure}
+
+\input{tables/v2_budgets.tex}
+\input{tables/v2_pairs.tex}
+
+\subsection{Latency and energy under mixed switching}\label{sec:energy}
+The v1 energy runs happened to contain only INT8 decisions, so they measured the cost of the adaptive infrastructure rather than switching (Table~\ref{tab:energy}). For v2 we measured \VEnergyClips{} seeded test clips at the 50\% budget, with a realised INT8 share of \VMeasFracINTeight{} and \VMeasSwitchRate{} switches per 100 frames (Fig.~\ref{fig:v2energy}, Table~\ref{tab:v2-energy}). Live decisions matched replay on \VLiveAgreementPct\% of frames.
+
+Forced alternation between INT8 and FP16 on every frame costs \VLatAlternation{} ms and \VETotalAlternation{} mJ per frame, between the two fixed engines. So switching itself is cheap. The controller is not. Computing the cues on a CPU worker hides their \VCueWaitMsSeq{} ms (wait \VCueWaitMsPipe{} ms), but feature statistics and model prediction add \VControllerMsPipe{} ms per frame on the critical path, and the worker competes with the inference thread for the CPU. As a result, adaptive inference took \VLatVTwoPipe{} ms and \VETotalVTwoPipe{} mJ per frame against \VLatFPsixteen{} ms and \VETotalFPsixteen{} mJ for fixed FP16 (P5 \VPFiveResult). The idle-subtracted $E_{\text{dyn}}$ would rank the adaptive configurations as the most efficient, which illustrates why we report $E_{\text{total}}$ as primary.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figs/v2_energy.pdf}
+\caption{Live latency per frame split into inference, controller step and cue wait (a), and GPU board energy per frame (b) under mixed switching. $E_{\text{total}}$ is primary; hatched bars show the idle-subtracted $E_{\text{dyn}}$.}\label{fig:v2energy}
+\end{figure}
+
+\input{tables/v2_energy.tex}
+\input{tables/test_energy_latency.tex}
+
+%% =====================================================================================
+\section{Discussion}\label{sec:discussion}
+Three observations explain the negative result. First, the accuracy cost of INT8 on this detector is small and diffuse: about one point of mAP spread over frames, not concentrated in recognisable scenes. Second, the information available before a frame is processed predicts that cost poorly (rank correlation \VSpearman), and even ground truth from the previous frame recovers little of the oracle's headroom. Third, the decision has to cost much less than the \EngineSavingINTeightMs\,ms per frame of engine time that INT8 saves on a T4. A controller that runs Python feature code and a tree model per frame cannot afford that, whereas switching between resident engines costs almost nothing.
+
+A per-frame precision controller would need a much cheaper decision rule (for example, one computed on the GPU or amortised over many frames), a predictor that sees information correlated with INT8 error (for example, the detector's own intermediate activations), or a larger accuracy gap between precisions than YOLO11s shows here. Until then, the practical recommendation for this kind of deployment is fixed INT8, or fixed FP16 where its accuracy is required.
+
+%% =====================================================================================
+\section{Limitations and threats to validity}\label{sec:limitations}
+\begin{itemize}
+\item \textbf{Scope.} One detector (YOLO11s), one dataset (BDD100K MOT, validation-derived clips), one GPU (T4), one quantization recipe (TensorRT post-training INT8 and FP16), GPU board energy only, no embedded device. The results should not be generalised beyond this setting.
+\item \textbf{Splits.} Calibration and test clips are disjoint but both come from the official validation split. Day and night strata come from luminance because the tracking labels have no time-of-day attribute.
+\item \textbf{Locking at the tolerance boundary.} The v1 lock was \CalibDropMain{} points below FP16 on calibration and \DropAdaptiveVsFPsixteen{} on test. Following the pre-registration, we did not re-tune or re-lock.
+\item \textbf{Engine rebuilds.} TensorRT INT8 calibration is not bit-reproducible across builds: the rebuilt INT8 engines differed from the first build by \DriftINTeight{} and \VDriftINTeight{} points of calibration mAP. Each run uses one engine set throughout.
+\item \textbf{Post-hoc decisions.} Two decisions were taken after seeing results and are documented as deviations: $E_{\text{total}}$ instead of $E_{\text{dyn}}$ as the primary energy metric, and evaluating H3 on the persistence sweep (a sensitivity analysis). The v2 follow-up was designed after the primary result but pre-registered before it ran.
+\item \textbf{References that use ground truth.} The oracle and lagged oracle are not deployable. The size of their headroom depends on the per-frame F1 adequacy rule.
+\item \textbf{Synthetic scene changes} and few natural ones. The scene-change benefit of v1 should not be read as evidence for natural cuts.
+\end{itemize}
+
+%% =====================================================================================
+\section{Conclusion}\label{sec:conclusion}
+Under a pre-registered protocol, neither a hand-weighted content-cue controller nor a learned per-frame risk estimator beat cost-matched random placement of INT8 frames for YOLO11s on BDD100K driving video on an NVIDIA T4, although an oracle shows that up to \VHeadroomFiftyPts{} points of mAP are available. Switching precision between resident engines is cheap, but deciding per frame cost more than INT8 saves. Fixed INT8 was the better trade-off in our setting. We release the protocol, locked configurations and result files so that per-frame precision controllers can be tested against the same baselines.
+
+\backmatter
+
+\bmhead{Acknowledgements}
+We thank Dr.~Uma Gurav, Head of the Department of Computer Science and Engineering (Artificial Intelligence and Machine Learning), KIT's College of Engineering, Kolhapur, for her guidance as faculty guide. Code and parts of this manuscript were drafted with the assistance of an AI system (Claude, Anthropic). The authors reviewed and verified all code, results and text and take full responsibility for them.
+
+\section*{Declarations}
+\begin{itemize}
+\item \textbf{Funding:} [to be completed by the authors]
+\item \textbf{Competing interests:} The authors declare no competing interests. [authors to confirm]
+\item \textbf{Ethics approval and consent to participate:} Not applicable; the study uses a public driving dataset under its research licence.
+\item \textbf{Data availability:} BDD100K is available from its authors under the BDD100K licence; we do not redistribute images or labels. Clip identifiers, per-frame statistics and all result files are released with the code.
+\item \textbf{Code availability:} The code, locked configurations with SHA-256 hashes, and the scripts that generate every table and figure are released under AGPL-3.0, because the detector framework is AGPL-licensed. [repository URL to be added]
+\item \textbf{Author contribution:} [to be completed by the authors]
+\end{itemize}
+
+\begin{appendices}
+\section{Ablations, persistence sweep and calibration details}\label{app:details}
+\input{tables/test_ablations.tex}
+\input{tables/test_ksweep.tex}
+\input{tables/calibration.tex}
+\input{tables/v2_calibration.tex}
+\input{tables/test_ci_pairs.tex}
+\input{tables/provenance.tex}
+\end{appendices}
+
+\bibliography{refs}
+
+\end{document}

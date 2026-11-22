@@ -1,0 +1,4 @@
+$ python paper/make_v2.py (2026-11-22T07:50:17Z)
+{'v2_budgets': 18, 'v2_pairs': 6, 'v2_energy': 5, 'v2_calibration': 8, 'figures': ['v2_budgets', 'v2_energy'], 'macros': 87}
+{'v2_budgets': 18, 'v2_pairs': 6, 'v2_energy': 5, 'v2_calibration': 8, 'figures': ['v2_budgets', 'v2_energy'], 'macros': 87}
+{'v2_budgets': 18, 'v2_pairs': 6, 'v2_energy': 5, 'v2_calibration': 8, 'figures': ['v2_budgets', 'v2_energy'], 'macros': 91}

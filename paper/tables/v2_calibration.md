@@ -1,0 +1,12 @@
+| Item | Value |
+|---|---|
+| risk model | gradient-boosted regression trees learning_rate=0.05, max_depth=2, max_iter=100 |
+| training rows (calib frames × 2 histories) | 7900 |
+| held-out Spearman(pred., true gain), clip-grouped CV | 0.060 |
+| FP16 calib mAP50-95 | 26.88 |
+| budget 25%: K / calib INT8 frac. / calib mAP50-95 | 3 / 0.250 / 26.65 |
+| budget 50%: K / calib INT8 frac. / calib mAP50-95 | 1 / 0.500 / 25.97 |
+| budget 75%: K / calib INT8 frac. / calib mAP50-95 | 3 / 0.750 / 25.98 |
+| rebuilt-engine drift vs Step 2 (calib mAP50-95, pts) | fp32 0.00, fp16 0.06, int8 0.41 |
+
+Controller v2 fitted and locked on the calib split only (prereg addendum).

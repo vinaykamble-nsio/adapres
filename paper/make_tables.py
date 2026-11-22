@@ -57,7 +57,8 @@ def write_table(name: str, cols: list[tuple[str, str]], rows: list[dict], captio
     out.mkdir(parents=True, exist_ok=True)
     with open(out / f"{name}.csv", "w", newline="", encoding="utf-8") as f:
         data = raw if raw is not None else rows
-        w = csv.DictWriter(f, fieldnames=list(data[0].keys()))
+        fields = list(dict.fromkeys(k for row in data for k in row))  # union of keys, first-seen order
+        w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(data)
     md = ["| " + " | ".join(h for _, h in cols) + " |", "|" + "---|" * len(cols)]

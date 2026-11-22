@@ -22,6 +22,7 @@ def main() -> int:
     import make_figs
     import make_numbers
     import make_tables
+    import make_v2
     import recompute_hypotheses
 
     h = recompute_hypotheses.main()
@@ -29,6 +30,7 @@ def main() -> int:
     print("tables:", make_tables.build())
     print("figures:", list(make_figs.build()))
     print("numbers:", len(make_numbers.build()), "macros")
+    print("v2 (notebook 05):", make_v2.build())
     return 0
 
 

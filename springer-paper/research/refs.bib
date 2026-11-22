@@ -1,0 +1,232 @@
+% refs.bib -- verified 2026-11-22 against Crossref (DOI metadata), arXiv,
+% CVF/MLSys/JMLR/publisher pages, and official vendor documentation.
+% Page ranges come from the Crossref (publisher-deposited) records unless noted.
+
+% ===================== Datasets & models =====================
+
+@inproceedings{yu2020bdd100k,
+  author    = {Yu, Fisher and Chen, Haofeng and Wang, Xin and Xian, Wenqi and Chen, Yingying and Liu, Fangchen and Madhavan, Vashisht and Darrell, Trevor},
+  title     = {{BDD100K}: A Diverse Driving Dataset for Heterogeneous Multitask Learning},
+  booktitle = {2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2633--2642},
+  year      = {2020},
+  doi       = {10.1109/CVPR42600.2020.00271}
+}
+
+@article{zhu2022visdrone,
+  author  = {Zhu, Pengfei and Wen, Longyin and Du, Dawei and Bian, Xiao and Fan, Heng and Hu, Qinghua and Ling, Haibin},
+  title   = {Detection and Tracking Meet Drones Challenge},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {44},
+  number  = {11},
+  pages   = {7380--7399},
+  year    = {2022},
+  doi     = {10.1109/TPAMI.2021.3119563}
+}
+
+@inproceedings{lin2014coco,
+  author    = {Lin, Tsung-Yi and Maire, Michael and Belongie, Serge and Hays, James and Perona, Pietro and Ramanan, Deva and Doll{\'a}r, Piotr and Zitnick, C. Lawrence},
+  title     = {Microsoft {COCO}: Common Objects in Context},
+  booktitle = {Computer Vision -- ECCV 2014},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer International Publishing},
+  address   = {Cham},
+  pages     = {740--755},
+  year      = {2014},
+  doi       = {10.1007/978-3-319-10602-1_48},
+  verify       = {UNVERIFIED: LNCS volume number and editors not present in the Crossref record checked}
+}
+
+@software{jocher2024yolo11,
+  author  = {Jocher, Glenn and Qiu, Jing},
+  title   = {Ultralytics {YOLO11}},
+  version = {11.0.0},
+  year    = {2024},
+  url     = {https://github.com/ultralytics/ultralytics},
+  license = {AGPL-3.0},
+  note    = {Citation as given on https://docs.ultralytics.com/models/yolo11/ (no paper; DOI stated as pending)}
+}
+
+% ===================== Quantization =====================
+
+@inproceedings{jacob2018quantization,
+  author    = {Jacob, Benoit and Kligys, Skirmantas and Chen, Bo and Zhu, Menglong and Tang, Matthew and Howard, Andrew and Adam, Hartwig and Kalenichenko, Dmitry},
+  title     = {Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference},
+  booktitle = {2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2704--2713},
+  year      = {2018},
+  doi       = {10.1109/CVPR.2018.00286}
+}
+
+@misc{nagel2021whitepaper,
+  author        = {Nagel, Markus and Fournarakis, Marios and Amjad, Rana Ali and Bondarenko, Yelysei and van Baalen, Mart and Blankevoort, Tijmen},
+  title         = {A White Paper on Neural Network Quantization},
+  year          = {2021},
+  eprint        = {2106.08295},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2106.08295}
+}
+
+@inproceedings{wang2019haq,
+  author    = {Wang, Kuan and Liu, Zhijian and Lin, Yujun and Lin, Ji and Han, Song},
+  title     = {{HAQ}: Hardware-Aware Automated Quantization With Mixed Precision},
+  booktitle = {2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {8604--8612},
+  year      = {2019},
+  doi       = {10.1109/CVPR.2019.00881}
+}
+
+@inproceedings{liu2022dqnet,
+  author    = {Liu, Zhenhua and Wang, Yunhe and Han, Kai and Ma, Siwei and Gao, Wen},
+  title     = {Instance-Aware Dynamic Neural Network Quantization},
+  booktitle = {2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {12424--12433},
+  year      = {2022},
+  doi       = {10.1109/CVPR52688.2022.01211},
+  note      = {Pages from Crossref/IEEE record; some secondary indexes list 12434--12443}
+}
+
+@inproceedings{jin2020adabits,
+  author    = {Jin, Qing and Yang, Linjie and Liao, Zhenyu},
+  title     = {{AdaBits}: Neural Network Quantization With Adaptive Bit-Widths},
+  booktitle = {2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2143--2153},
+  year      = {2020},
+  doi       = {10.1109/CVPR42600.2020.00222}
+}
+
+@inproceedings{sun2021videoiq,
+  author    = {Sun, Ximeng and Panda, Rameswar and Chen, Chun-Fu Richard and Oliva, Aude and Feris, Rogerio and Saenko, Kate},
+  title     = {Dynamic Network Quantization for Efficient Video Inference},
+  booktitle = {2021 IEEE/CVF International Conference on Computer Vision (ICCV)},
+  pages     = {7355--7365},
+  year      = {2021},
+  doi       = {10.1109/ICCV48922.2021.00728}
+}
+
+@manual{nvidia_tensorrt_docs,
+  title        = {{NVIDIA TensorRT} Documentation},
+  organization = {NVIDIA Corporation},
+  url          = {https://docs.nvidia.com/deeplearning/tensorrt/latest/index.html},
+  note         = {Accessed 2026-11-22},
+  verify       = {Accessed 2026-11-22. Quantization: https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/work-quantized-types.html. UNVERIFIED: no publication year or version on the page; cite the TensorRT version recorded in results/ metadata (the current site no longer has a page titled "Developer Guide")}
+}
+
+% ===================== Adaptive video analytics / adaptive detection =====================
+
+@inproceedings{chin2019adascale,
+  author    = {Chin, Ting-Wu and Ding, Ruizhou and Marculescu, Diana},
+  title     = {{AdaScale}: Towards Real-time Video Object Detection using Adaptive Scaling},
+  booktitle = {Proceedings of Machine Learning and Systems},
+  editor    = {Talwalkar, A. and Smith, V. and Zaharia, M.},
+  volume    = {1},
+  pages     = {431--441},
+  year      = {2019},
+  url       = {https://proceedings.mlsys.org/paper_files/paper/2019/hash/b3ac5aacb06c91fda1af776a677100ab-Abstract.html}
+}
+
+@inproceedings{jiang2018chameleon,
+  author    = {Jiang, Junchen and Ananthanarayanan, Ganesh and Bodik, Peter and Sen, Siddhartha and Stoica, Ion},
+  title     = {Chameleon: Scalable Adaptation of Video Analytics},
+  booktitle = {Proceedings of the 2018 Conference of the ACM Special Interest Group on Data Communication (SIGCOMM '18)},
+  publisher = {ACM},
+  address   = {New York, NY, USA},
+  pages     = {253--266},
+  year      = {2018},
+  doi       = {10.1145/3230543.3230574}
+}
+
+@inproceedings{xu2020approxdet,
+  author    = {Xu, Ran and Zhang, Chen-lin and Wang, Pengcheng and Lee, Jayoung and Mitra, Subrata and Chaterji, Somali and Li, Yin and Bagchi, Saurabh},
+  title     = {{ApproxDet}: Content and Contention-Aware Approximate Object Detection for Mobiles},
+  booktitle = {Proceedings of the 18th Conference on Embedded Networked Sensor Systems (SenSys '20)},
+  publisher = {ACM},
+  address   = {New York, NY, USA},
+  pages     = {449--462},
+  year      = {2020},
+  doi       = {10.1145/3384419.3431159}
+}
+
+@inproceedings{xu2022litereconfig,
+  author    = {Xu, Ran and Lee, Jayoung and Wang, Pengcheng and Bagchi, Saurabh and Li, Yin and Chaterji, Somali},
+  title     = {{LiteReconfig}: Cost and Content Aware Reconfiguration of Video Object Detection Systems for Mobile {GPUs}},
+  booktitle = {Proceedings of the Seventeenth European Conference on Computer Systems (EuroSys '22)},
+  publisher = {ACM},
+  pages     = {334--351},
+  year      = {2022},
+  doi       = {10.1145/3492321.3519577}
+}
+
+@inproceedings{jiang2021remix,
+  author    = {Jiang, Shiqi and Lin, Zhiqi and Li, Yuanchun and Shu, Yuanchao and Liu, Yunxin},
+  title     = {Flexible High-Resolution Object Detection on Edge Devices with Tunable Latency},
+  booktitle = {Proceedings of the 27th Annual International Conference on Mobile Computing and Networking (MobiCom '21)},
+  publisher = {ACM},
+  pages     = {559--572},
+  year      = {2021},
+  doi       = {10.1145/3447993.3483274}
+}
+
+@inproceedings{lin2023dynamicdet,
+  author    = {Lin, Zhihao and Wang, Yongtao and Zhang, Jinhe and Chu, Xiaojie},
+  title     = {{DynamicDet}: A Unified Dynamic Architecture for Object Detection},
+  booktitle = {2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {6282--6291},
+  year      = {2023},
+  doi       = {10.1109/CVPR52729.2023.00608}
+}
+
+% ===================== Energy measurement =====================
+
+@manual{nvidia_nvml_api,
+  title        = {{NVML} {API} Reference Guide},
+  organization = {NVIDIA Corporation},
+  url          = {https://docs.nvidia.com/deploy/nvml-api/index.html},
+  note         = {Accessed 2026-11-22},
+  verify       = {Accessed 2026-11-22. UNVERIFIED: no year or version shown on the page; cite the driver/NVML version recorded in results/ metadata}
+}
+
+@inproceedings{yang2024gpupower,
+  author    = {Yang, Zeyu and Adamek, Karel and Armour, Wesley},
+  title     = {Accurate and Convenient Energy Measurements for {GPUs}: A Detailed Study of {NVIDIA} {GPU}'s Built-In Power Sensor},
+  booktitle = {SC24: International Conference for High Performance Computing, Networking, Storage and Analysis},
+  pages     = {1--17},
+  year      = {2024},
+  doi       = {10.1109/SC41406.2024.00028},
+  note      = {Preprint: arXiv:2312.02741 ("Part-time Power Measurements: nvidia-smi's Lack of Attention")}
+}
+
+@article{henderson2020energy,
+  author  = {Henderson, Peter and Hu, Jieru and Romoff, Joshua and Brunskill, Emma and Jurafsky, Dan and Pineau, Joelle},
+  title   = {Towards the Systematic Reporting of the Energy and Carbon Footprints of Machine Learning},
+  journal = {Journal of Machine Learning Research},
+  volume  = {21},
+  number  = {248},
+  pages   = {1--43},
+  year    = {2020},
+  url     = {https://jmlr.org/papers/v21/20-312.html}
+}
+
+% ===================== Statistics =====================
+
+@book{efron1994bootstrap,
+  author    = {Efron, Bradley and Tibshirani, Robert J.},
+  title     = {An Introduction to the Bootstrap},
+  publisher = {Chapman \& Hall/CRC},
+  series    = {Monographs on Statistics and Applied Probability},
+  year      = {1994},
+  doi       = {10.1201/9780429246593},
+  verify       = {Crossref DOI record and Routledge page give 1994; library catalogs give New York: Chapman \& Hall, 1993. UNVERIFIED: series number (57) and 1993 print date not confirmed on a primary page}
+}
+
+@article{cameron2008bootstrap,
+  author  = {Cameron, A. Colin and Gelbach, Jonah B. and Miller, Douglas L.},
+  title   = {Bootstrap-Based Improvements for Inference with Clustered Errors},
+  journal = {The Review of Economics and Statistics},
+  volume  = {90},
+  number  = {3},
+  pages   = {414--427},
+  year    = {2008},
+  doi     = {10.1162/rest.90.3.414}
+}

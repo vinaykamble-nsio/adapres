@@ -77,6 +77,23 @@ def test_tables_figs_numbers_from_results(tmp_path):
     assert all(k.isalpha() for k in nums)
 
 
+@pytest.mark.skipif(not (RES / "bdd100k_mot" / "r05_test_v2_rho0.5").exists(), reason="notebook 05 results not present")
+def test_v2_artifacts_from_results(tmp_path):
+    import make_v2
+
+    tabs, figs = tmp_path / "tables", tmp_path / "figs"
+    made = make_v2.build(RES, tabs, figs, tmp_path / "numbers_v2.tex")
+    assert made["v2_budgets"] == 18 and set(made["figures"]) == {"v2_budgets", "v2_energy"}
+    m = json.loads((RES / "bdd100k_mot/r05_test_v2_rho0.5/metrics.json").read_text())
+    nums = dict(line[len("\\newcommand{\\"):-1].split("}{") for line in
+                (tmp_path / "numbers_v2.tex").read_text(encoding="utf-8").splitlines() if line.startswith("\\newcommand"))
+    assert nums["MapVTwoFifty"] == f"{100 * m['all']['map50_95']:.2f}"
+    h = json.loads((RES / "bdd100k_mot/r05_test_v2_hypotheses/hypotheses.json").read_text())
+    assert nums["VPOneResult"] == ("supported" if h["P1_primary"]["supported"] else "not supported")
+    assert all(k.isalpha() for k in nums)
+    assert all(open(p, "rb").read(4) == b"%PDF" for p in figs.glob("v2_*.pdf"))
+
+
 @needs
 def test_generators_refuse_smoke_and_mixed_commits(tmp_path):
     import _results

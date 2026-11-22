@@ -1,0 +1,9 @@
+| Configuration | latency ms | E_total mJ/frame | E_dyn mJ/frame | INT8 frac. | switches/100 | cue wait ms | controller ms |
+|---|---|---|---|---|---|---|---|
+| Fixed FP16 | 5.63 [5.63–5.64] | 388.3 [387.8–388.4] | 219.1 [218.7–219.3] | – | – | – | – |
+| Fixed INT8 | 4.93 [4.93–4.93] | 305.2 [303.6–305.2] | 156.6 [155.6–157.3] | – | – | – | – |
+| Forced alternation (every frame) | 5.45 [5.44–5.46] | 350.7 [350.0–350.9] | 192.1 [191.7–192.9] | 0.50 | 100.0 | – | – |
+| v2 50%, pipelined cues | 8.94 [8.93–8.98] | 395.0 [392.4–395.2] | 127.5 [127.1–128.5] | 0.37 | 24.3 | 0.05 | 2.29 |
+| v2 50%, sequential cues | 11.91 [11.86–11.98] | 438.5 [434.5–446.8] | 72.5 [70.9–82.7] | 0.38 | 24.2 | 2.73 | 1.53 |
+
+Live measurement under mixed switching on 6 seeded test clips (856 frames, pre-decoded), one Tesla T4, 3 interleaved repeats; median [min–max]. E_total/frame primary, E_dyn/frame secondary (NVML board energy counter). Cue wait and controller step (feature statistics + model prediction) are median ms per frame. Live decisions matched replay on 100% of frames.
