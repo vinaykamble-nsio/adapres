@@ -60,7 +60,8 @@ def _index(results: Path, allow_smoke: bool) -> dict:
 
 def _load(idx, results, exp, name):
     if P + exp not in idx:
-        raise QResultsError(f"missing run {P + exp}")
+        raise QResultsError(f"missing run {P + exp}: the stage that writes it has not completed for this results dir. "
+                            f"r06 runs present: {sorted(idx)}")
     p = results / idx[P + exp]["path"] / name
     if name.endswith(".csv"):
         return list(csv.DictReader(open(p, newline="", encoding="utf-8")))
