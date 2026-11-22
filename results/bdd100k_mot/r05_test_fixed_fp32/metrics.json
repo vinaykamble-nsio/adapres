@@ -1,0 +1,159 @@
+{
+  "all": {
+    "energy_kind": "estimated from measured fixed-level E/frame (E_total primary)",
+    "est_E_dyn_mJ_per_frame": null,
+    "est_E_total_mJ_per_frame": null,
+    "est_engine_ms": 7.183877000102256,
+    "frac_level": {
+      "fp16": 0.0,
+      "fp32": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.4294689037984171,
+    "map50_95": 0.267017831323333,
+    "n_images": 7796,
+    "per_class_ap50": {
+      "bicycle": 0.3805214340544323,
+      "bus": 0.3535954332620543,
+      "car": 0.6537505204716257,
+      "motorcycle": 0.30266493900502445,
+      "person": 0.5721530332486257,
+      "train": -1.0,
+      "truck": 0.3141280627487406
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.16975732268135063,
+      "bus": 0.3148236798685348,
+      "car": 0.4230225523022933,
+      "motorcycle": 0.12960106352280856,
+      "person": 0.3187758910923209,
+      "train": -1.0,
+      "truck": 0.24612647847268976
+    },
+    "switch_rate_per_100": 0.0
+  },
+  "crowded": {
+    "est_E_dyn_mJ_per_frame": null,
+    "est_E_total_mJ_per_frame": null,
+    "est_engine_ms": 7.183877000102257,
+    "frac_level": {
+      "fp16": 0.0,
+      "fp32": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.4252232527897207,
+    "map50_95": 0.24497796363268445,
+    "n_images": 768,
+    "per_class_ap50": {
+      "bicycle": 0.431214030287481,
+      "bus": 0.20100223126845884,
+      "car": 0.6708214378131596,
+      "motorcycle": -1.0,
+      "person": 0.6253850400194145,
+      "train": -1.0,
+      "truck": 0.19769352456008926
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.1844800090963642,
+      "bus": 0.16991742456563852,
+      "car": 0.39067385285292416,
+      "motorcycle": -1.0,
+      "person": 0.3412250492195778,
+      "train": -1.0,
+      "truck": 0.13859348242891753
+    }
+  },
+  "easy": {
+    "est_E_dyn_mJ_per_frame": null,
+    "est_E_total_mJ_per_frame": null,
+    "est_engine_ms": 7.183877000102257,
+    "frac_level": {
+      "fp16": 0.0,
+      "fp32": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.5043825210541992,
+    "map50_95": 0.3397970970294694,
+    "n_images": 3841,
+    "per_class_ap50": {
+      "bicycle": 0.47714861378756035,
+      "bus": 0.4877604343339254,
+      "car": 0.7023322118756956,
+      "motorcycle": 0.4496353779845569,
+      "person": 0.5113419178679666,
+      "train": -1.0,
+      "truck": 0.3980765704754906
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.28901908876529225,
+      "bus": 0.44692582548602505,
+      "car": 0.49378700867750663,
+      "motorcycle": 0.1759342083891875,
+      "person": 0.31159513166190783,
+      "train": -1.0,
+      "truck": 0.3215213191968973
+    }
+  },
+  "night": {
+    "est_E_dyn_mJ_per_frame": null,
+    "est_E_total_mJ_per_frame": null,
+    "est_engine_ms": 7.183877000102257,
+    "frac_level": {
+      "fp16": 0.0,
+      "fp32": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.2249214557770693,
+    "map50_95": 0.1258758429651215,
+    "n_images": 2295,
+    "per_class_ap50": {
+      "bicycle": 0.23683549671927365,
+      "bus": 0.015002686940228613,
+      "car": 0.5940379096791625,
+      "motorcycle": 0.002688172043010753,
+      "person": 0.41240471876944357,
+      "train": -1.0,
+      "truck": 0.08855975051129714
+    },
+    "per_class_ap50_95": {
+      "bicycle": 0.09843203609437275,
+      "bus": 0.012523549276704238,
+      "car": 0.35618747617117474,
+      "motorcycle": 0.0002688172043010753,
+      "person": 0.2224606338273049,
+      "train": -1.0,
+      "truck": 0.06538254521687108
+    }
+  },
+  "scene_change_natural": {
+    "est_E_dyn_mJ_per_frame": null,
+    "est_E_total_mJ_per_frame": null,
+    "est_engine_ms": 7.183877000102257,
+    "frac_level": {
+      "fp16": 0.0,
+      "fp32": 1.0,
+      "int8": 0.0
+    },
+    "map50": 0.2395255366134224,
+    "map50_95": 0.1576119626824902,
+    "n_images": 31,
+    "per_class_ap50": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.557295399112289,
+      "motorcycle": -1.0,
+      "person": 0.38833883388338825,
+      "train": -1.0,
+      "truck": 0.012467913458012465
+    },
+    "per_class_ap50_95": {
+      "bicycle": -1.0,
+      "bus": 0.0,
+      "car": 0.3493769175496862,
+      "motorcycle": -1.0,
+      "person": 0.2698498110680633,
+      "train": -1.0,
+      "truck": 0.01122112211221122
+    }
+  }
+}

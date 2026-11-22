@@ -1,0 +1,63 @@
+{
+  "all_pass": true,
+  "checks": [
+    {
+      "check": "fixed_fp16: composed eval == notebook 02 (all slices)",
+      "detail": {
+        "all": 0.0,
+        "crowded": 0.0,
+        "easy": 0.0,
+        "night": 0.0,
+        "scene_change_natural": 0.0
+      },
+      "pass": true
+    },
+    {
+      "check": "fixed_int8: composed eval == notebook 02 (all slices)",
+      "detail": {
+        "all": 0.0,
+        "crowded": 0.0,
+        "easy": 0.0,
+        "night": 0.0,
+        "scene_change_natural": 0.0
+      },
+      "pass": true
+    },
+    {
+      "check": "oracle_cheap: composed eval == notebook 02 (all slices)",
+      "detail": {
+        "all": 0.0,
+        "crowded": 0.0,
+        "easy": 0.0,
+        "night": 0.0,
+        "scene_change_natural": 0.0
+      },
+      "pass": true
+    },
+    {
+      "check": "random_matched: INT8 fraction matches adaptive (|diff| <= 0.05)",
+      "detail": {
+        "adaptive": 0.5025316455696203,
+        "random_matched": 0.4953417721518988
+      },
+      "pass": true
+    },
+    {
+      "check": "random_matched: switch rate matches adaptive (within 25% relative or 1/100)",
+      "detail": {
+        "adaptive": 3.4683544303797467,
+        "random_matched": 3.5443037974683547
+      },
+      "pass": true
+    }
+  ],
+  "informational": {
+    "switch_rate_by_K": {
+      "adaptive_K1": 6.151898734177215,
+      "adaptive_K2": 3.4683544303797467,
+      "adaptive_K3": 2.4556962025316458,
+      "adaptive_K5": 1.7974683544303798
+    },
+    "switch_rate_nonincreasing_in_K": true
+  }
+}

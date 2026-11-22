@@ -1,0 +1,37 @@
+addendum_sha256: d0ee21c78b215e6422d670f08e56cc295064a494d2a457086d93af8abdf5552a
+calib_frac_int8: 0.5
+controller:
+  H: 3
+  K_down: 1
+  K_up: 1
+  alpha: 1.0
+  levels:
+  - int8
+  - fp16
+  norm:
+    c:
+    - 0.02387934027777778
+    - 0.1661067708333333
+    m:
+    - 0.003950653594771242
+    - 0.10440864991830062
+    n:
+    - 2.0
+    - 18.0
+    u:
+    - 0.2260858300328255
+    - 0.5691344133019447
+  scene_override: true
+  start_level: fp16
+  theta: 0.6118429746001607
+  theta_sc: 0.5
+  w_h: 0.0
+  weights:
+    c: 0.0
+    m: 0.25
+    n: 0.5
+    s: 0.25
+    u: 0.0
+rho: 0.5
+theta: 0.2924957275390625
+v1_source_lock_sha256: 16a1faf1ab9b3c939b65c5d3410d219ae3aec1a812b53861519c0c331708e95b

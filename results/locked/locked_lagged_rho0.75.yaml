@@ -1,0 +1,4 @@
+addendum_sha256: d0ee21c78b215e6422d670f08e56cc295064a494d2a457086d93af8abdf5552a
+note: 'REFERENCE: uses GT one frame late; not deployable'
+rho: 0.75
+tau: 0.04033274600262642

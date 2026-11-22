@@ -1,0 +1,282 @@
+{
+  "1_engines_calib_cache": {
+    "stage": "1_engines_calib_cache",
+    "pass": true,
+    "checks": [
+      {
+        "check": "Step 2 binding sanity: fp32 mAP50-95 valid",
+        "pass": true,
+        "detail": 26.879
+      },
+      {
+        "check": "Step 2 binding sanity: fp16 mAP50-95 valid",
+        "pass": true,
+        "detail": 26.884
+      },
+      {
+        "check": "Step 2 binding sanity: int8 mAP50-95 valid",
+        "pass": true,
+        "detail": 25.999
+      },
+      {
+        "check": "Step 2 binding sanity: FP16 vs FP32 (TRT) |diff|",
+        "pass": true,
+        "detail": 0.005
+      },
+      {
+        "check": "Step 2 binding sanity: INT8 - FP16",
+        "pass": true,
+        "detail": -0.885
+      },
+      {
+        "check": "rebuilt fp32 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 2.6805109187844067e-06,
+          "crowded": 6.017764664356662e-06,
+          "easy": 3.0955202345861466e-06,
+          "night": 2.2860736609287002e-06,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "rebuilt fp16 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.01413499691678699,
+          "crowded": 0.05806805740126153,
+          "easy": 0.023971320229548843,
+          "night": 0.007345062279892622,
+          "scene_change_natural": 0.003784631311637421
+        }
+      },
+      {
+        "check": "rebuilt int8 calib mAP50-95 within 0.5 pts of committed Step 2 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.02240642209110355,
+          "crowded": 0.0043942630240045855,
+          "easy": 0.019334275506949217,
+          "night": 0.23384927719427295,
+          "scene_change_natural": 0.409933409676283
+        }
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-21T19:00:44Z"
+  },
+  "2_calib_dev": {
+    "stage": "2_calib_dev",
+    "pass": true,
+    "checks": [
+      {
+        "check": "fixed_fp16: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "fixed_int8: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "oracle_cheap: composed eval == notebook 02 (all slices)",
+        "pass": true,
+        "detail": {
+          "all": 0.0,
+          "easy": 0.0,
+          "crowded": 0.0,
+          "night": 0.0,
+          "scene_change_natural": 0.0
+        }
+      },
+      {
+        "check": "random_matched: INT8 fraction matches adaptive (|diff| <= 0.05)",
+        "pass": true,
+        "detail": {
+          "adaptive": 0.5025316455696203,
+          "random_matched": 0.4953417721518988
+        }
+      },
+      {
+        "check": "random_matched: switch rate matches adaptive (within 25% relative or 1/100)",
+        "pass": true,
+        "detail": {
+          "adaptive": 3.4683544303797467,
+          "random_matched": 3.5443037974683547
+        }
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-21T19:08:03Z"
+  },
+  "3_v2_fit_lock": {
+    "stage": "3_v2_fit_lock",
+    "pass": true,
+    "checks": [
+      {
+        "check": "prereg addendum hash verified",
+        "pass": true,
+        "detail": "d0ee21c78b215e64"
+      },
+      {
+        "check": "lock v2_rho0.25 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock v1_rho0.25 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock lagged_rho0.25 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock v2_rho0.5 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock v1_rho0.5 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock lagged_rho0.5 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock v2_rho0.75 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock v1_rho0.75 written and hash-verified",
+        "pass": true
+      },
+      {
+        "check": "lock lagged_rho0.75 written and hash-verified",
+        "pass": true
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "held-out Spearman(pred, g) > 0 on calib",
+        "pass": true,
+        "detail": 0.05985715962353777
+      },
+      {
+        "check": "calib INT8 fraction within 0.01 of rho=0.25 (addendum)",
+        "pass": true,
+        "detail": 0.250126582278481
+      },
+      {
+        "check": "calib INT8 fraction within 0.01 of rho=0.5 (addendum)",
+        "pass": true,
+        "detail": 0.5
+      },
+      {
+        "check": "calib INT8 fraction within 0.01 of rho=0.75 (addendum)",
+        "pass": true,
+        "detail": 0.7501265822784811
+      }
+    ],
+    "time_utc": "2026-11-21T19:09:03Z"
+  },
+  "4_test_cache": {
+    "stage": "4_test_cache",
+    "pass": true,
+    "checks": [
+      {
+        "check": "test cache complete (cues + 3 levels for every test frame)",
+        "pass": true,
+        "detail": 7796
+      },
+      {
+        "check": "test and calib clip sets are disjoint",
+        "pass": true
+      },
+      {
+        "check": "locked main config hash verified before reading test",
+        "pass": true,
+        "detail": "d38db6ad864f359960294c141eff60256beb434dc7467a45ae26e6e2233db98a"
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "spliced streams available for the scene-change slice",
+        "pass": true,
+        "detail": 20
+      }
+    ],
+    "time_utc": "2026-11-21T19:25:40Z"
+  },
+  "5_v2_energy": {
+    "stage": "5_v2_energy",
+    "pass": true,
+    "checks": [
+      {
+        "check": "protocol measured fixed_fp16",
+        "pass": true
+      },
+      {
+        "check": "protocol measured fixed_int8",
+        "pass": true
+      },
+      {
+        "check": "protocol measured adaptive_v2_pipelined",
+        "pass": true
+      },
+      {
+        "check": "protocol measured adaptive_v2_sequential",
+        "pass": true
+      },
+      {
+        "check": "protocol measured forced_alternation",
+        "pass": true
+      }
+    ],
+    "soft_checks": [
+      {
+        "check": "v2 live vs replay decision agreement >= 0.9",
+        "pass": true,
+        "detail": 1.0
+      },
+      {
+        "check": "measurement set has mixed switching (0.2 <= INT8 frac <= 0.8)",
+        "pass": true,
+        "detail": 0.37850467289719625
+      }
+    ],
+    "time_utc": "2026-11-21T19:55:56Z"
+  },
+  "6_v2_test_eval": {
+    "stage": "6_v2_test_eval",
+    "pass": true,
+    "checks": [
+      {
+        "check": "v2@0.50: fast replay == step-by-step RiskController on test",
+        "pass": true
+      },
+      {
+        "check": "every policy evaluated on all test frames",
+        "pass": true
+      },
+      {
+        "check": "bootstrap ran (1000 resamples)",
+        "pass": true
+      }
+    ],
+    "soft_checks": [],
+    "time_utc": "2026-11-21T23:06:23Z"
+  }
+}

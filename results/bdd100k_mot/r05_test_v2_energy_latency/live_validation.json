@@ -1,0 +1,13 @@
+{
+  "clips": [
+    "b1cac6a7-04e33135",
+    "b1d0a191-65deaeef",
+    "b1d22ed6-f1cac061",
+    "b1df722f-57d21f3f",
+    "b1f4491b-09593e90",
+    "b200b84e-4a792877"
+  ],
+  "level_agreement_live_vs_replay": 1.0,
+  "live_frac_int8": 0.37850467289719625,
+  "n_frames": 856
+}
