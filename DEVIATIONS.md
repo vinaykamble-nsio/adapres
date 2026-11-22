@@ -132,6 +132,68 @@ reported, and nothing was re-run.
   - v2's latency was dominated by its controller step (feature statistics plus model prediction,
     2.29 ms per frame, on the critical path even with pipelined cues).
 
+## F. Second pre-registered follow-up: Q-ROUTE (decided 2026-11-22, after the r04 and r05 results)
+
+**Why.** v1 and v2 switched only between INT8 and FP16 at 640 px. Two r05 results motivated a redesign:
+- the per-frame INT8 regret was barely predictable (held-out Spearman 0.06);
+- the decision cost (2.3 ms) was larger than the INT8 saving (0.7 ms).
+
+**What.** Q-ROUTE routes each frame among 6 engines (FP16/INT8 × 640/480/320) by predicted regret
++ λ·cost.
+- The cost charges the profiled latency, an online contention slowdown, and the measured controller
+  overhead.
+- The design is frozen in `configs/prereg_qroute.yaml`, with its SHA-256 in
+  `configs/prereg_qroute.yaml.sha256`. It covers:
+  - splits, action space, features and feature gating;
+  - predictors and the controller;
+  - budgets (B_int8 primary, B_mid);
+  - every baseline and ablation;
+  - Q1–Q5, the contention protocol and the reporting rules.
+- `QROUTE_COMPLETE_EXPERIMENT.ipynb` verifies the hash, and every Q-ROUTE lock records it.
+
+**New untouched test set.** The 40 former test clips have been seen through r04/r05 results, so they
+are no longer untouched.
+- They and the 20 calib clips (60 in all) become **development** data.
+- **40 NEW final-test clips** are drawn once (seed 2027) from the BDD100K MOT val clips that are not
+  in the Step 1 selection.
+- They are stratified 28 day / 12 night with the Step 1 rule: the label attribute if present,
+  otherwise median-frame luma vs the Step 1 Otsu threshold. Step 1's 24/12/4 mix used a dawn/dusk
+  stratum; this rule classifies only day/night, so the new set has no dawn/dusk stratum.
+- Image ids start at 2,000,000.
+
+**Integrity rules.**
+- All fitting, model selection, feature gating and λ/K tuning use development clips only.
+- The final test clips are evaluated once, with hashed locks.
+- r04 stays the primary pre-registered result; r05 and r06 are follow-ups, reported whatever they show.
+
+**Edits before the freeze (no data touched):** two YAML syntax fixes, found by the local dry-run:
+- a flow list containing `{…}`, quoted;
+- a `": "` inside a plain scalar, reworded.
+
+The design content is unchanged. The hash was written after the code was final.
+
+**Implementation notes, decided before any real Q-ROUTE run.**
+- **Budget B_int8.** It is the profiled cost of fixed INT8-640 *without* controller overhead, while
+  Q-ROUTE pays its measured overhead. Variants restricted to {FP16-640, INT8-640} (precision-only,
+  hardware-only) therefore cannot reach B_int8. Each lock records `budget_met_on_dev`; this is a result,
+  not an error.
+- **Live vs replay.** With hardware adaptation the live controller reacts to measured latency, which
+  isolated replay does not model. The implementation check is therefore the no-hardware variant,
+  which must match replay; the main controller's agreement is reported as well.
+- **Contention generator.** It waits until its CUDA context is ready, and synchronises after every
+  matmul so that GPU busy time tracks the duty cycle.
+- **`full_features_no_gating` ablation.** It is skipped, and recorded as skipped, when image cues are
+  gated in, because it would then be identical to the main controller.
+
+**Not run (blocked; stated, never claimed):**
+- **INT4 engines:** the Ultralytics TensorRT export offers FP32/FP16/INT8 only, so the notebook
+  records INT4 as unsupported.
+- **Jetson / embedded hardware:** not available.
+- **VisDrone end-to-end:** only parsed and validated if attached. The pre-registered pipeline is
+  BDD100K only.
+
+**Outcome:** pending. Q-ROUTE has not been run on Kaggle yet.
+
 ## D. Provenance (clean commits)
 
 | Stage | Commit |

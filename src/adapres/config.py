@@ -111,6 +111,11 @@ _SCHEMA: dict[str, type | tuple[type, ...]] = {
     "v2.random_seeds": int,
     "v2.bootstrap_resamples": int,
     "v2.smoke": dict,
+    "qroute.exp_prefix": str,
+    "qroute.prereg": str,
+    "qroute.new_test_strata": dict,
+    "qroute.image_id_offset": int,
+    "qroute.smoke": dict,
 }
 
 VALID_LEVELS = ("fp32", "fp16", "int8")

@@ -12,6 +12,13 @@ through `paper/numbers.tex` macros (generated from `results/`). Wording for v2 i
 No claims about embedded devices (the Jetson claim is removed), other detectors, other datasets,
 other GPUs, quantisation-aware training, or adaptive inference in general.
 
+**Title and core idea follow the abstract submitted to the conference** ("Content- and
+Hardware-Aware Adaptive Precision for Real-Time Video Object Detection"; corresponding author Vinay
+Kamble). The hardware-aware (device-load) term is part of the controller's formulation, but
+**`w_h = 0` in every experiment: it is not evaluated.** 4-bit engines, VisDrone and the Jetson board
+from the submitted abstract were not run. The paper states this in its abstract and limitations,
+and claims nothing about them.
+
 ## 1. "The algorithm does not beat its strongest baselines"
 - **Claim (r04, pre-registered primary):** the content-cue controller does not outperform fixed
   INT8 or matched random switching; H1 and H2 are not supported.
@@ -55,6 +62,17 @@ other GPUs, quantisation-aware training, or adaptive inference in general.
 - The **lagged oracle** (ground truth one frame late) is also a reference that uses ground truth,
   not a deployable method. It shows how much of the headroom is temporally predictable.
 - "Headroom captured" = (v2 − matched random) / (oracle − matched random) is descriptive only.
+
+## Q-ROUTE (r06, second pre-registered follow-up): status
+- **Implemented, not yet run.** It has been checked only by local dry-runs with fake engines,
+  which test wiring, gates, locks and live-equals-replay, not performance.
+- **No Q-ROUTE result may appear in the paper** until `results_QROUTE_COMPLETE_EXPERIMENT.zip` from a
+  clean-commit Kaggle run is unpacked into `results/`.
+- When results exist, the wording follows Q1 (primary: Q-ROUTE vs best fixed config at B_int8, with
+  the bootstrap CI over the 40 NEW test clips), whatever its sign.
+- Q4/Q5 and every live number must be labelled *measured*; replay costs must be labelled *estimated*.
+- The hardware-aware term is evaluated only by Q-ROUTE (the r04/r05 claims keep `w_h = 0`).
+- INT4, Jetson and VisDrone end-to-end stay future work (see DEVIATIONS.md F).
 
 ## Statements that stay as they are
 - Fixed INT8 vs FP16: −0.95 pts mAP50-95 on test, with 13% lower latency and 15% lower E_total

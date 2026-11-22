@@ -38,9 +38,10 @@ def read_engine_metadata(path: str | Path) -> dict:
 
 
 def export_engine(weights: str | Path, level: str, imgsz: int, out_dir: str | Path,
-                  int8_data: str | Path | None = None, batch: int = 1) -> dict:
+                  int8_data: str | Path | None = None, batch: int = 1, tag: str | None = None) -> dict:
     """Export one TensorRT engine. Ultralytics writes <stem>.engine next to the weights,
-    so it is moved to out_dir/<stem>_<level>.engine immediately."""
+    so it is moved to out_dir/<stem>_<tag or level>.engine immediately (tag e.g. 'int8_480'
+    keeps engines of different input sizes apart)."""
     from ultralytics import YOLO
 
     if level not in ("fp32", "fp16", "int8"):
@@ -58,7 +59,7 @@ def export_engine(weights: str | Path, level: str, imgsz: int, out_dir: str | Pa
     t0 = time.perf_counter()
     produced = Path(model.export(**kw))
     build_s = time.perf_counter() - t0
-    dest = out_dir / f"{Path(weights).stem}_{level}.engine"
+    dest = out_dir / f"{Path(weights).stem}_{tag or level}.engine"
     shutil.move(str(produced), dest)
     import tensorrt as trt
 

@@ -124,6 +124,45 @@ class V2Stepper:
                 "total_ms": (time.perf_counter() - t0) * 1000, "engine_infer_ms": tim.get("infer_ms")}
 
 
+class QRouteStepper:
+    """Live Q-ROUTE: features of the previous detections (+ image cues if gated in), predicted regret,
+    hardware-aware choice; the measured wall time of each inference feeds the slowdown EMA."""
+
+    def __init__(self, backends: Mapping[str, object], model, params, featurizer_factory: Callable | None,
+                 frames: Sequence[np.ndarray], seq_starts: Sequence[int], img_area: float, tau_c: float):
+        from .qroute import QRouteController
+
+        self.be, self.frames, self.area = backends, frames, img_area
+        self.starts = set(int(s) for s in seq_starts)
+        self.ff = featurizer_factory if params.use_img else None
+        self.ctl = QRouteController(model, params, tau_c)
+        self.i, self._fz = 0, None
+
+    def close(self):
+        pass
+
+    def step(self) -> dict:
+        n = len(self.frames)
+        i = self.i % n
+        t0 = time.perf_counter()
+        if i in self.starts or self.i == 0:
+            self.ctl.reset()
+            self._fz = self.ff() if self.ff else None
+        cues = self._fz(self.frames[i]) if self._fz else None
+        t1 = time.perf_counter()
+        out = self.ctl.step(cues)
+        t2 = time.perf_counter()
+        dets, tim = self.be[out["config"]].predict(self.frames[i])
+        t3 = time.perf_counter()
+        wall = (t3 - t2) * 1000
+        self.ctl.observe(dets, self.area, observed_cost=wall)
+        self.i += 1
+        return {"frame": i, "level": out["config"], "switched": out["switched"], "dets": dets,
+                "feat_wait_ms": (t1 - t0) * 1000, "ctrl_ms": (t2 - t1) * 1000, "infer_wall_ms": wall,
+                "total_ms": (time.perf_counter() - t0) * 1000, "engine_infer_ms": tim.get("infer_ms"),
+                "slowdown": out["slowdown"]}
+
+
 class AlternatingStepper:
     """Forced switching every frame (INT8, FP16, INT8, ...): the worst-case switching cost."""
 

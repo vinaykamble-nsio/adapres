@@ -59,6 +59,7 @@ def _run(fr, tmp_path, upto=6):
 
 def test_v2_requires_frozen_addendum(env):  # noqa: F811
     tmp_path, repo_dir, gtn = env
+    (repo_dir / "configs" / "prereg_addendum.yaml.sha256").unlink(missing_ok=True)  # the copied repo configs carry the real hash
     with pytest.raises(FULL.GateError, match="frozen"):
         _make(tmp_path, repo_dir, gtn)
     _freeze_addendum(repo_dir)

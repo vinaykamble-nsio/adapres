@@ -1,0 +1,101 @@
+# Pre-registration ADDENDUM 2: Q-ROUTE (quantization-regret-aware precision x resolution routing).
+# Written 2026-11-22 after the r04 (v1) and r05 (v2) results were seen. Frozen before any Q-ROUTE
+# code touches real data: SHA-256 in configs/prereg_qroute.yaml.sha256, verified by the notebook.
+# configs/preregistration.yaml and configs/prereg_addendum.yaml are unchanged. r04 stays the primary
+# pre-registered result; Q-ROUTE is a second pre-registered follow-up, reported whatever its result.
+
+frozen_on: 2026-11-22
+seed: 2027
+motivation: >
+  v1/v2 switched precision only (INT8/FP16) at 640 px; per-frame INT8 regret was barely predictable
+  (Spearman 0.06) and decision cost (2-3 ms) exceeded the INT8 saving (0.7 ms). Q-ROUTE (i) adds input
+  resolution to the action space (resolution regret plausibly depends on object size, which is
+  observable in the previous frame), (ii) uses only near-free causal features by default (feature
+  gating), (iii) charges every controller cost (features + predictor) inside the objective,
+  (iv) adds an online hardware (latency) model with deadlines.
+
+splits:
+  development: the 60 clips used so far (20 calib + 40 former test clips, Step 1 selection). Used for
+    training, model selection, tuning lambda/K and every design choice.
+  final_test: 40 NEW clips drawn ONCE (seed 2027) from the BDD100K MOT val clips not in the Step 1
+    selection, stratified day/night (median-frame luma, Step 1 threshold); untouched by any earlier
+    experiment. Evaluated once with frozen configurations.
+  image_ids: final_test image ids start at 2,000,000 (disjoint from all earlier ids).
+
+action_space:
+  configs: [fp16_640, int8_640, fp16_480, int8_480, fp16_320, int8_320]   # TensorRT engines, YOLO11s
+  reference: fp16_640
+  extra_fixed_reference: fp32_640
+  int4: only if TensorRT builds an INT4 engine for this detector in-session; otherwise reported as unsupported
+
+quality_and_regret:
+  per_frame_quality: F1@0.5 (class-aware greedy matching, conf >= 0.25, ignore regions discarded)
+  regret_c(t): F1(reference, t) - F1(c, t)
+
+features:
+  lightweight (default):   # computed from the detections actually used at t-1, t-2 (near-free)
+    [n, mean_score, min_score, frac_low_conf, n_near_threshold, frac_small, mean_log_rel_area,
+     class_entropy, delta_n, delta_mean_score, prev_res_480, prev_res_320, prev_int8]
+  image_cues (gated):      [m, c, d]   # motion, clutter, HSV distance; used only if selected on development
+  training_rows: every development frame x every possible previous config (6 rows per frame)
+
+predictors:
+  candidates: ["ridge (numpy, alpha in {0.1, 1, 10})", "hist_gradient_boosting (max_depth in {2, 3}, max_iter 100, lr 0.1)"]
+  selection: 5-fold GroupKFold by clip on development; metric = mean held-out Spearman over non-reference configs;
+             ties within 0.01 -> cheaper predictor (ridge < gbt)
+  runtime: fast numpy evaluation (gbt exported to arrays, validated against sklearn in-session)
+
+controller:
+  objective: choose c minimising  predicted_regret_c + lambda * cost_c(t) / cost_reference
+  cost_c(t): isolated engine latency_c * hardware_slowdown(t) + controller overhead (measured)
+  hardware_slowdown: EMA (beta 0.3) of observed / isolated latency of the engine used at t-1
+  deadline: if set, configs with cost_c(t) > deadline are excluded; if none fits -> cheapest config
+  persistence: switch only after K consecutive identical proposals (K in {1, 2, 3}, chosen on development);
+               a deadline violation switches immediately
+  safe_fallback: first frame of a clip -> reference config
+  lambda: bisection on cross-fitted closed-loop development replay so mean cost = budget (+-1%)
+
+budgets:   # mean per-frame cost (ms) on the T4, from in-session profiling
+  B_int8: cost of fixed int8_640 (PRIMARY budget; asks whether routing beats the practical INT8 choice at its cost)
+  B_mid: midpoint of fixed int8_640 and fixed fp16_640 costs
+
+baselines_on_final_test:
+  - fixed configs (all 6) and fixed fp32_640
+  - best_fixed@B: the fixed config with the best DEVELOPMENT mAP among those with cost <= B
+  - v1 (r04 locked) and v2 (r05 locked at 50%), on {int8_640, fp16_640}
+  - precision_only Q-ROUTE ({fp16_640, int8_640}), resolution_only Q-ROUTE ({fp16_640, fp16_480, fp16_320})
+  - hardware_only: no content prediction; per-config development mean regret, deadline-aware
+  - matched_random@B: Markov chain over configs fitted to the Q-ROUTE test log (10 seeds)
+  - oracle@B (UPPER BOUND, uses GT): per-frame argmin of true regret + lambda*cost, lambda set on test for budget B
+
+ablations_on_final_test:   # each re-tuned (lambda, K) on development exactly like the full controller
+  [no_regret_prediction, no_hardware_adaptation, no_temporal_features, no_persistence, full_features_no_gating,
+   precision_only, resolution_only, energy_cost_objective]
+
+hypotheses:
+  Q1_primary: >
+    At budget B_int8, Q-ROUTE test mAP@0.5:0.95 exceeds best_fixed@B_int8 (paired cluster-bootstrap 95% CI
+    over test clips, 1000 resamples, seed 2027, entirely above 0).
+  Q2: at B_int8, Q-ROUTE exceeds matched_random@B_int8 (CI above 0).
+  Q3: at B_mid, Q-ROUTE exceeds best_fixed@B_mid (CI above 0).
+  Q4_live_cost: live median end-to-end latency of Q-ROUTE@B_int8 (pipelined off, all controller costs included)
+    is <= 1.05 x the live median latency of fixed int8_640.
+  Q5_hardware: under the contention schedule, Q-ROUTE with hardware adaptation has a lower deadline-miss rate than
+    without it, with test mAP not lower by more than 0.3 points (descriptive; live and replay reported separately).
+
+hardware_contention:
+  generator: separate process running GPU matrix multiplications with duty cycle d
+  levels: [0.0, 0.5, 0.9]
+  schedule: repeating 20 s phases 0.0 -> 0.5 -> 0.9 on the live measurement clips
+  deadline_ms: 1.25 x isolated latency of fixed fp16_640 (end-to-end, measured in-session)
+
+measurement:
+  live clips: 6 seeded final-test clips, first 150 frames each, pre-decoded
+  repeats: 3, warm-up 20 s, idle 30 s, windows >= 60 s; E_total primary, E_dyn secondary
+  replay vs live: decision agreement and mAP difference reported
+
+reporting_rules:
+  - All Q-ROUTE numbers come from one notebook run (QROUTE_COMPLETE_EXPERIMENT.ipynb); measured vs estimated
+    (replay) values are labelled.
+  - Results are reported in full whether Q1-Q5 succeed or fail; no re-tuning on the final test clips.
+  - Claims limited to YOLO11s, BDD100K MOT (val-derived clips), one Tesla T4, TensorRT PTQ.

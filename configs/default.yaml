@@ -175,6 +175,34 @@ v2:                            # notebook 05: controller v2 (design frozen in co
     energy_clips: 1
     energy_frames_per_clip: 30
 
+qroute:                        # QROUTE_COMPLETE_EXPERIMENT.ipynb (design frozen in configs/prereg_qroute.yaml)
+  exp_prefix: r06_
+  prereg: configs/prereg_qroute.yaml
+  new_test_strata: {daytime: 28, night: 12, dawn_dusk: 0}
+  image_id_offset: 2000000
+  feature_gate_min_gain: 0.02    # image cues used only if they raise CV Spearman by >= this
+  frames_per_phase: 100          # replay contention schedule (frames per 20 s phase at the 5 fps label rate)
+  live_clips: 6
+  live_frames_per_clip: 150
+  contention_phase_s: 20
+  contention_iters: 60       # per config and contention level (S11 profile)
+  energy_probe_s: 10         # isolated energy per config (S11; energy-objective ablation)
+  random_seeds: 10
+  bootstrap_resamples: 1000
+  visdrone_slug: visdrone        # optional; validated only if attached
+  smoke:
+    dev_clips: 3
+    new_test_strata: {daytime: 1, night: 1, dawn_dusk: 0}
+    live_clips: 1
+    live_frames_per_clip: 30
+    contention_phase_s: 3
+    contention_iters: 10
+    energy_probe_s: 2
+    random_seeds: 2
+    bootstrap_resamples: 20
+    n_folds: 2
+    candidates: [{kind: ridge, alpha: 1.0}, {kind: gbt, max_depth: 2, max_iter: 20, learning_rate: 0.1}]
+
 step2:                         # notebook 02: fixed FP32/FP16/INT8 on calib clips only
   split: calib
   levels: [fp32, fp16, int8]

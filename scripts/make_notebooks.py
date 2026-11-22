@@ -1031,9 +1031,237 @@ def build_nb05(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
     return nb
 
 
+# --------------------------------------------------------------------------- QROUTE_COMPLETE_EXPERIMENT
+
+QR_NAME = "QROUTE_COMPLETE_EXPERIMENT"
+
+QR_README = """# QROUTE_COMPLETE_EXPERIMENT — quantization-regret-aware precision x resolution routing (one notebook)
+
+**Purpose.** Q-ROUTE is the second pre-registered follow-up. Its design is frozen in `configs/prereg_qroute.yaml`;
+the notebook checks that file's SHA-256 and stops if it changed. Q-ROUTE routes each frame to one of six TensorRT
+engines (FP16/INT8 x 640/480/320). It picks the engine that minimises *predicted quantization regret + lambda x cost*.
+The cost charges the measured engine latency under current GPU contention **and** the controller's own overhead.
+r04 (v1) stays the primary pre-registered result. r05 (v2) and Q-ROUTE (r06) are reported whatever they show.
+
+**Data.**
+- Development = the 60 clips used so far: training, model selection, and lambda/K tuning.
+- Final test = 40 NEW clips that no earlier experiment touched, drawn once from BDD100K MOT val and
+  evaluated once with frozen (hashed) configurations.
+
+**Stages (gated; a failed gate writes a `_PARTIAL` zip and stops).** One section per step:
+1. Environment
+2. Global config
+3. Dataset loading (+ optional VisDrone validation)
+4. Model preparation (+ INT4 support check)
+5. Fixed baselines
+6. Counterfactual cache
+7. Oracle headroom
+8. Feature engineering
+9. Regret prediction
+10. Q-ROUTE controller
+11. Hardware awareness
+12. Controller optimization
+13. Baseline comparisons
+14. Ablations
+15. Final held-out evaluation
+16. Live benchmarking
+17. Figures
+18. Export
+19. Validation summary
+
+Every number is written to `results/` with the config, seed, git commit, hardware and prereg hash.
+Replay values (exact mAP on cached detections, estimated cost) and live measurements are labelled
+separately.
+
+**Before running**
+1. *Add Data* → **`tcjpaperdatasets`** (BDD100K MOT). Optional: a VisDrone-VID dataset; it is only validated, not
+   part of the pre-registered pipeline.
+2. *Settings* → **Accelerator: GPU T4 x2** (pinned to one GPU), **Internet: On**; *Add-ons → Secrets* → tick **`GH_TOKEN`**.
+3. `SMOKE_TEST = True` first: about 40 min, mostly building 7 engines. Then `SMOKE_TEST = False` →
+   *Save Version → Save & Run All*: about 3–4 h. These are estimates, not yet measured. Caches are checkpointed
+   per clip inside the session.
+
+**Download afterwards:** `results_QROUTE_COMPLETE_EXPERIMENT.zip` → unzip into the repo root. It contains
+`results/bdd100k_mot/r06_*`, `results/microbench/r06_*`, `results/locked/locked_qroute_*` (+ `.sha256`,
+predictor pickles), `results/r06_stages/stages.json`, `results/r06_figures/`, `results/r06_tables/` and `logs/`.
+
+## 1. Environment
+The next two cells check the GPU and pin it, clone the repo at a clean commit, check the notebook revision and
+run the locked installs.
+"""
+
+QR_SETUP = NB04_SETUP.replace("from adapres.pipeline.full import FullRun, GateError",
+                              "from adapres.pipeline.full import GateError\nfrom adapres.pipeline.qroute_run import QRun") \
+    .replace('"work04")', '"work06")') \
+    .replace("run = FullRun(cfg, SMOKE_TEST, REPO)",
+             'run = QRun(cfg, SMOKE_TEST, REPO)\nimport pandas as pd\npd.set_option("display.width", 250)') \
+    .replace("results_04_full_pipeline", "results_" + QR_NAME).replace("04_full.log", "06_qroute.log") \
+    .replace("CELL 3: SETUP (weights, run object, fail-safe zip)", "SECTION 2: GLOBAL CONFIG + RUN OBJECT") + '''
+print("prereg_qroute sha256:", run.prereg_sha)
+print("action space:", run.configs, "| reference:", run.ref, "| extra fixed reference:", run.extra)
+print("qroute config:", json.dumps({k: v for k, v in cfg["qroute"].items() if k != "smoke"}, indent=1))
+if SMOKE_TEST:
+    print("SMOKE overrides:", cfg["qroute"]["smoke"])
+'''
+
+QR_SECTIONS = [
+    ("## 2. Global config\nThe frozen design hash, action space, budgets and seeds, plus the run object that every stage "
+     "below uses.", QR_SETUP),
+    ("## 3. Dataset loading\n- Development clips come from the committed Step 1 manifests.\n"
+     "- 40 NEW final-test clips are drawn once from the untouched BDD100K MOT val clips, stratified day/night with the "
+     "Step 1 rule.\n- Disjointness gates check that the two sets never overlap.\n\nVisDrone is validated only if attached.",
+     '''S3 = stage(run.s3_data)
+print("dev clips:", len(S3["dev_clips"]), "| final test clips:", len(S3["final_test_clips"]), S3["final_test_strata"])
+print("final test set sha256:", S3["final_test_sha256"])
+print("VisDrone:", S3["visdrone"])
+'''),
+    ("## 4. Model preparation\n- TensorRT engines are rebuilt in this session for every config; INT8 is calibrated on the "
+     "committed 500 calib frames.\n- Output-consistency check.\n- Isolated latency profile.\n- INT4 support check.",
+     '''S4 = stage(run.s4_models, WEIGHTS, NAMES)
+print(pd.DataFrame([{"config": c, "wall ms (median)": run.profile[c]["wall_ms"]["median"],
+                     "engine ms (median)": run.profile[c]["infer_ms"]["median"]} for c in run.all_cfgs]).round(3).to_string(index=False))
+print("INT4:", S4["int4"])
+'''),
+    ("## 5. Fixed baselines\nOne decode pass per frame runs **every** config. This builds the counterfactual cache, "
+     "checkpointed per clip. The table shows each fixed config's accuracy on the development clips.",
+     '''S5 = stage(run.s5_caches)
+print(S5)
+print(pd.DataFrame(run.fixed_dev_table()).round(4).to_string(index=False))
+'''),
+    ("## 6. Counterfactual cache\nPer-frame regret = F1(FP16-640) - F1(config), from the cache (development only).",
+     '''REG = run.regret_summary()
+print(pd.DataFrame(REG).T.round(4).to_string())
+'''),
+    ("## 7. Oracle headroom\nOn development clips, a budgeted oracle per action space is compared with the best fixed "
+     "config at the same budget. The oracle uses ground truth, so it is an upper bound.",
+     '''S7 = stage(run.s7_headroom)
+print("budgets (ms):", {k: round(v, 3) for k, v in S7["budgets_ms"].items()})
+for b, o in S7["oracle"].items():
+    print(b, "best fixed:", o["best_fixed"], round(100 * o["best_fixed_map"], 2),
+          {sp: round(100 * o[sp]["map"], 2) for sp in ("precision_only", "resolution_only", "joint")})
+'''),
+    ("## 8. Feature engineering\n- Causal, near-free features come from the detections used at t-1 and t-2.\n"
+     "- Image cues are gated in only if they raise held-out Spearman by the pre-registered margin.\n"
+     "- The cost of each component is measured.",
+     '''S8 = stage(run.s8_s9_predictor)
+print("image cues gated in:", S8["use_image_cues"], "| CV Spearman light / full:", round(S8["spearman_light"], 4),
+      round(S8["spearman_full"], 4), "| gain", round(S8["gate_gain"], 4))
+print("feature cost (ms):", {k: round(v, 4) for k, v in S8["feature_cost"].items()})
+print("feature usefulness (|ridge coef|):", {k: round(v, 4) for k, v in sorted(S8["feature_usefulness"].items(), key=lambda kv: -kv[1])})
+'''),
+    ("## 9. Regret prediction\n- Ridge vs gradient-boosted trees, compared by 5-fold clip-grouped CV on development.\n"
+     "- The trees are exported to numpy and validated against scikit-learn.\n"
+     "- Out-of-fold predicted vs observed regret.",
+     '''print("chosen predictor:", S8["chosen"])
+print(pd.DataFrame(S8["cv_full" if S8["use_image_cues"] else "cv_light"]).to_string(index=False))
+print("held-out Spearman per config:", {k: round(v, 3) for k, v in S8["per_config_oof_spearman"].items()})
+'''),
+    ("## 10. Q-ROUTE controller\nThe deployable controller minimises regret + lambda x cost / cost_ref, with a deadline, "
+     "persistence, fallback and a slowdown EMA. It must make identical decisions to the fast closed-loop replay used "
+     "for tuning.",
+     '''S10 = stage(run.s10_controller_check)
+print(S10)
+'''),
+    ("## 11. Hardware awareness\n- A separate GPU process runs at duty cycles 0 / 0.5 / 0.9; the measured slowdown per config "
+     "comes from these runs.\n- Deadline.\n- Isolated GPU-board energy per config (the cost used by the energy-objective "
+     "ablation).",
+     '''S11 = stage(run.s11_hardware)
+print(pd.DataFrame(S11["slowdown_ratios"]).round(3).to_string())
+print("deadline ms:", round(S11["deadline_ms"], 3), "| energy mJ/frame:", run.energy_cost)
+'''),
+    ("## 12. Controller optimization\nlambda is set by bisection to each budget, and K is chosen, on cross-fitted closed-loop "
+     "development replay. This is done for the main controller, the variants and every ablation. Each lock is hashed "
+     "together with its predictor.",
+     '''S12 = stage(run.s12_controller)
+print(pd.DataFrame(S12).T.to_string())
+'''),
+    ("## 13. Baseline comparisons\n**The final test clips are evaluated here, once**, with the frozen locks. Policies "
+     "compared:\n- fixed configs;\n- best fixed at each budget;\n- v1 (r04) and v2 (r05);\n"
+     "- precision-only, resolution-only and hardware-only;\n- matched random (10 seeds);\n- GT oracle (upper bound).",
+     '''S15 = stage(run.s15_final_eval)
+F = run.final["metrics"]
+def row(n):
+    a = F[n]["all"]
+    return {"policy": n, "mAP50-95": 100 * a["map50_95"], "mAP50": 100 * a["map50"], "est cost ms": a["mean_cost_ms_est"],
+            "switch/100": a["switch_rate_per_100"]}
+base = [n for n in F if not n.startswith(("random_B_int8_s", "qroute_abl_", "contention_"))]
+print(pd.DataFrame([row(n) for n in sorted(base)]).round(3).to_string(index=False))
+print("matched random @B_int8:", {k: round(v, 4) for k, v in run.final["aggregates"]["random_B_int8"].items()})
+print("errors:", {k: v for k, v in run.final["info"].items() if isinstance(v, dict) and "error" in v})
+'''),
+    ("## 14. Ablations\nEach ablation was re-tuned on development exactly like the full controller (section 12).",
+     '''abl = [n for n in F if n.startswith(("qroute_abl_", "qroute_hardware_only", "contention_"))]
+print(pd.DataFrame([row(n) for n in sorted(abl)]).round(3).to_string(index=False))
+'''),
+    ("## 15. Final held-out evaluation\nPaired cluster bootstrap over test clips (1000 resamples). Gives the "
+     "pre-registered Q1–Q3 and the replay part of Q5.",
+     '''for k, v in run.final["bootstrap"]["pairs"].items():
+    m = v["map50_95"]
+    print(f"{k:45s} {100*m['mean']:+.2f} pts  CI [{100*m['ci95'][0]:+.2f}, {100*m['ci95'][1]:+.2f}]")
+print(json.dumps(S15["hypotheses"], indent=1, default=str))
+'''),
+    ("## 16. Live benchmarking\nOn pre-decoded test frames:\n- latency median and p95, throughput;\n"
+     "- GPU-board energy (E_total primary), memory;\n- allocation and controller overhead;\n"
+     "- live-vs-replay agreement;\n- live contention runs (Q4, Q5).",
+     '''S16 = stage(run.s16_live)
+s = run.live["protocol"]["summary"]
+print(pd.DataFrame([{"config": k, "lat med ms": v["latency_total_ms_median"]["median"], "lat p95 ms": v["latency_total_ms_p95"]["median"],
+                     "fps": v["throughput_fps"]["median"] if v["throughput_fps"] else None,
+                     "E_total mJ/frame": v["E_total_mJ_per_frame"]["median"] if v["E_total_mJ_per_frame"] else None}
+                    for k, v in s.items()]).round(3).to_string(index=False))
+print("memory:", run.live["memory"], "| live vs replay:", run.live["live_vs_replay"])
+print(pd.DataFrame({k: {kk: v[kk] for kk in ("miss_rate", "latency_median_ms", "latency_p95_ms", "map50_95_first_pass")}
+                    for k, v in run.live["contention"].items()}).T.round(4).to_string())
+print(json.dumps(S16, indent=1, default=str))
+'''),
+    ("## 17. Figures\nRendered from the `results/` records only:\n- accuracy-latency and accuracy-energy Pareto;\n"
+     "- oracle headroom;\n- predicted vs observed regret;\n- per-scene;\n- overhead;\n- allocation;\n- contention;\n"
+     "- ablations;\n- bootstrap statistics.",
+     '''sys.path.insert(0, os.path.join(REPO, "paper"))
+import make_qroute
+FIGS = make_qroute.build(RESULTS, os.path.join(RESULTS, "r06_figures"), os.path.join(RESULTS, "r06_tables"), allow_smoke=SMOKE_TEST)
+print(FIGS["figures"])
+'''),
+    ("## 18. Export\nThe experiment summary (stages, hypotheses, measured vs estimated) is written to `results/`. The final "
+     "cell zips results and logs.",
+     '''SUMMARY = run.s19_summary()
+n_files = sum(len(f) for _, _, f in os.walk(RESULTS))
+print("files under results/:", n_files)
+'''),
+    ("## 19. Validation summary\nWhat passed, what is incomplete, which hypotheses are supported, and what was NOT run.",
+     '''for k, v in run.stages.items():
+    print(("PASS " if v["pass"] else "FAIL ") + k)
+    for c in v["checks"] + v["soft_checks"]:
+        if not c["pass"]:
+            print("    not met:", c["check"], str(c.get("detail", ""))[:200])
+print("incomplete stages:", SUMMARY["incomplete"])
+print("hypotheses supported:", SUMMARY["hypotheses"])
+print("measured vs estimated:", json.dumps(SUMMARY["measured_vs_estimated"], indent=1))
+print("not run in this notebook: INT4 engines (unsupported, see r06_models/int4.json); Jetson/embedded devices; "
+      "VisDrone end-to-end (validated only, if attached)")
+'''),
+]
+
+
+def build_qroute(rev: str = REV_PLACEHOLDER) -> nbf.NotebookNode:
+    nb = nbf.v4.new_notebook()
+    nb.metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                   "language_info": {"name": "python"},
+                   "kaggle": {"accelerator": "nvidiaTeslaT4", "isInternetEnabled": True, "isGpuEnabled": True}}
+    cells = [nbf.v4.new_markdown_cell(QR_README),
+             nbf.v4.new_code_cell(config_and_env_cell(QR_NAME, rev=rev)),
+             nbf.v4.new_code_cell(PIP_CELL)]
+    for md, code in QR_SECTIONS:
+        cells += [nbf.v4.new_markdown_cell(md), nbf.v4.new_code_cell(code)]
+    cells.append(nbf.v4.new_code_cell(zip_cell(QR_NAME)))
+    nb.cells = cells
+    return nb
+
+
 BUILDERS = {"01_env_and_data.ipynb": build_nb01, "02_eval_fp32_fp16_int8.ipynb": build_nb02,
             "02b_val_diagnostic.ipynb": build_nb02b, "03_controller_dev.ipynb": build_nb03,
-            "04_full_pipeline.ipynb": build_nb04, "05_controller_v2.ipynb": build_nb05}
+            "04_full_pipeline.ipynb": build_nb04, "05_controller_v2.ipynb": build_nb05,
+            QR_NAME + ".ipynb": build_qroute}
 
 
 def notebook_rev(name: str) -> str:

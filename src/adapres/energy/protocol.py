@@ -83,7 +83,8 @@ def run_protocol(steppers: Mapping[str, object], meter, warmup_s: float, settle_
                    if any(s["util_gpu"] is not None for s in w["samples"]) else None}
             if name.startswith("adaptive") or (rows and "level" in rows[0]):
                 lv = [x["level"] for x in rows]
-                rec["frac_int8"] = float(np.mean([v == "int8" for v in lv])) if lv else None
+                rec["frac_int8"] = float(np.mean([str(v).startswith("int8") for v in lv])) if lv else None
+                rec["allocation"] = {k: float(np.mean([v == k for v in lv])) for k in sorted(set(lv))} if lv else {}
                 rec["switch_rate_per_100"] = (100.0 * float(np.mean([x.get("switched", 0) for x in rows]))
                                               if rows else None)
                 if "feat_wait_ms" in rows[0]:

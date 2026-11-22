@@ -30,6 +30,25 @@ logs/               local command logs
 data/ cache/        gitignored, never committed
 ```
 
+## Q-ROUTE: `notebooks/QROUTE_COMPLETE_EXPERIMENT.ipynb` (one notebook, Run All)
+
+Q-ROUTE is the second pre-registered follow-up. The design is frozen in `configs/prereg_qroute.yaml`
+plus its `.sha256`; DEVIATIONS.md section F gives the rationale.
+- Logic: `src/adapres/qroute.py`, `pipeline/qroute_run.py`, `hw/contention.py` and
+  `live.QRouteStepper`.
+- Figures: `paper/make_qroute.py`.
+- Tests: `tests/test_qroute.py` and `tests/test_qroute_dryrun.py` (the latter is `slow`, run with
+  `pytest -m slow`).
+
+**To run:**
+1. Commit and push.
+2. Import the generated notebook into Kaggle.
+3. Attach `tcjpaperdatasets` (VisDrone is optional).
+4. Settings: GPU T4, Internet on, Secret `GH_TOKEN`.
+5. Run with `SMOKE_TEST = True` first, then `False` with *Save & Run All*.
+6. Unzip `results_QROUTE_COMPLETE_EXPERIMENT.zip` into the repo root.
+7. Regenerate the figures locally: `python paper/make_qroute.py`.
+
 ## Local setup (CPU only)
 
 ```powershell
